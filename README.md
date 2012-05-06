@@ -2,7 +2,7 @@ DHTBot
 ======
 
 DHTBot is a collection of utilities and protocols that help communicate
-with nodes found in the BitTorrent MDHT network.
+with nodes found in the BitTorrent DHT network.
 
 DHTBot is written entirely in Python using the asynchronous networking
 framework Twisted. The Bencode algorithm implementation is taken from the last
@@ -25,10 +25,6 @@ network and examine the results.
     (http://www.twistedmatrix.com) for more help on twisted.
 * The references folder contains a few pdf's and html files of DHT
     research and specifications that were used in the development of DHTBot
-
-
-The core functionality currently lies in the two twisted protocols found in
-dhtbot/protocols/krpc_sender.py and dhtbot/protocols/krpc_responder.py
 
 Patches and suggestions are welcome!
 Send your contributions to gsk067@gmail.com
