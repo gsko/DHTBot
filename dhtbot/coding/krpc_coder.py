@@ -4,6 +4,8 @@
 Encode and decode functions used in processing KRPCs/packets
 originating from and destined to the DHT network
 
+@see dhtbot.krpc_types for the representation of KRPCs used by dhtbot
+
 """
 from dhtbot import contact
 from dhtbot.coding import basic_coder
@@ -18,7 +20,8 @@ class InvalidKRPCError(Exception):
     so that the user of the encode/decode functions can abstract
     the error handling to just this error
 
-    @param invalid_message: the packet/krpc message that caused the error
+    @param invalid_message: the encoded packet or krpc object that caused
+        the error
 
     """
     def __init__(self, invalid_message):
@@ -29,12 +32,13 @@ def decode(packet):
     Decode the raw network packet into a valid KRPC
 
     @return an instance of either Query, Response, or Error
-    @see krpc_types
+    @see dhtbot.krpc_types
+    @raises InvalidKRPCError if the given packet is invalid
 
    """
     try:
         dpacket = _decode(packet)
-    except (ValueError, KeyError, AttributeError,
+    except (ValueError, KeyError, AttributeError, _ProtocolFormatError,
             basic_coder.InvalidDataError, BTFailure):
         raise InvalidKRPCError(packet)
     else:
@@ -45,11 +49,13 @@ def encode(message):
     Encode a valid KRPC into a raw network packet ready for transmission
 
     @return a bencoded representation of the input KRPC message
+    @see dhtbot.krpc_types
+    @raises InvalidKRPCError if the given krpc object is invalid
 
     """
     try:
         packet = _encode(message)
-    except (ValueError, KeyError, AttributeError,
+    except (ValueError, KeyError, AttributeError, _ProtocolFormatError,
             basic_coder.InvalidDataError, TypeError, BTFailure):
         raise InvalidKRPCError(message)
     else:
@@ -58,6 +64,18 @@ def encode(message):
 ##
 ## Private encoding / decoding helper functions
 ##
+
+class _ProtocolFormatError(Exception):
+    """
+    Error signifiying invalid krpc options were included in the message
+
+    This exception is thrown when the given protocol message / object
+    contains options that do not conform to the BEP5 specification
+
+    @see DHTBot/references/bep0005.html
+
+    """
+    pass
 
 def _decode(packet):
     """@see decode"""
@@ -99,7 +117,7 @@ def _query_decoder(rpc_dict):
         q.port = basic_coder.decode_port(rpc_dict['a']['port'])
         q.token = basic_coder.btol(rpc_dict['a']['token'])
     else:
-        raise InvalidKRPCError
+        raise _ProtocolFormatError()
     return q
 
 def _response_decoder(rpc_dict):
@@ -161,7 +179,7 @@ def _error_decoder(rpc_dict):
     e = Error()
     e.code, e.message = rpc_dict['e']
     if e.code not in [201, 202, 203]:
-        raise InvalidKRPCError()
+        raise _ProtocolFormatError()
     return e
 
 def _encode(message):
@@ -179,7 +197,7 @@ def _encode(message):
     elif isinstance(message, Error):
         intermediate_msg['y'] = 'e'
     else:
-        raise InvalidKRPCError()
+        raise _ProtocolFormatError()
 
     message_encoders = {'q': _query_encoder,
                         'r': _response_encoder,
@@ -211,7 +229,7 @@ def _query_encoder(query):
         query_dict['a']['info_hash'] = (
                 basic_coder.encode_network_id(query.target_id))
     else:
-        raise InvalidKRPCError()
+        raise _ProtocolFormatError()
     return query_dict
 
 def _response_encoder(response):
@@ -232,7 +250,7 @@ def _error_encoder(error):
     """@see encode"""
     # Verify the error code is in the valid range
     if error.code not in [201, 202, 203]:
-        raise InvalidKRPCError()
+        raise _ProtocolFormatError()
     # Make sure the message is actually a string
     error.message = str(error.message)
     err_dict = {"e": [error.code, error.message]}
