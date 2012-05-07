@@ -66,7 +66,7 @@ class IRoutingTable(Interface):
 
         """
 
-class TreeRoutingTable(RoutingTable):
+class TreeRoutingTable(object):
     """
     Prefix tree based Kademlia routing table
 
