@@ -12,13 +12,18 @@ import random
 from collections import defaultdict
 
 from twisted.python import log
+from zope.interface import Interface, implements
 
 from dhtbot import contact, constants
 from dhtbot.kademlia import kbucket
 
-class RoutingTable(object):
-    """The specification of what routing tables should implement"""
+class IRoutingTable(Interface):
+    """
+    A routing table as described in the paper on kademlia
 
+    @see DHBot/references/kademlia.pdf
+
+    """
     def offer_node(self, node):
         """Offers the given node to the RoutingTable
 
@@ -28,7 +33,6 @@ class RoutingTable(object):
         be returned
 
         """
-        raise NotImplemented
 
     def remove_node(self, node):
         """Remove the given node from the tree
@@ -36,7 +40,6 @@ class RoutingTable(object):
         @return boolean indicating whether the node was found in the tree
 
         """
-        raise NotImplemented
 
     def get_node(self, node_id):
         """
@@ -45,7 +48,6 @@ class RoutingTable(object):
         @return a node or None
 
         """
-        raise NotImplemented
 
     def get_node_by_address(self, address):
         """
@@ -55,7 +57,6 @@ class RoutingTable(object):
                  address, otherwise None
 
         """
-        raise NotImplemented
 
     def get_closest_nodes(self, node_id, num_nodes=constants.k):
         """
@@ -64,7 +65,6 @@ class RoutingTable(object):
         @return an iterable containing the nodes
 
         """
-        raise NotImplemented
 
 class TreeRoutingTable(RoutingTable):
     """
@@ -75,6 +75,9 @@ class TreeRoutingTable(RoutingTable):
     (see the references in the module docstring, above)
 
     """
+
+    implements(IRoutingTable)
+
     def __init__(self, node_id):
         self.node_id = node_id
         k = kbucket.KBucket(0, 2**constants.id_size)

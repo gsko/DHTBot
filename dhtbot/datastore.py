@@ -8,9 +8,11 @@ used for maintaing infohash->peer information
 import time
 from collections import defaultdict
 
+from zope.interface import (Interface, implements)
+
 from dhtbot import constants
 
-class DataStore(object):
+class IDataStore(Interface):
     """
     Data storage mechanism for handling DHT put/get requests
 
@@ -29,7 +31,6 @@ class DataStore(object):
         having the particular resource associated with 'infohash'
         
         """
-        raise NotImplemented
 
     def get(self, infohash):
         """
@@ -38,20 +39,21 @@ class DataStore(object):
         @return an iterable containing the peers
 
         """
-        raise NotImplemented
 
-class MemoryDataStore(DataStore):
+class MemoryDataStore(object):
+
+    implements(IDataStore)
+
     """
     A DataStore that stores its data in memory
-
-    torrents[] maps an infohash to a dictionary of addresses
-    torrents[infohash][] maps an address to its last announce time
 
     The MemoryDataStore uses the twisted reactor to timeout
     peers that have been announced in the past. Thus the reactor
     must be passed in during the creation of a MemoryDataStore
 
     """
+    # torrents[] maps an infohash to a dictionary of addresses
+    # torrents[infohash][] maps an address to its last announce time
     def __init__(self, reactor):
         self.reactor = reactor
         self.torrents = defaultdict(dict)
