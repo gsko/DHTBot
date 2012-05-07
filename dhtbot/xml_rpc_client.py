@@ -59,28 +59,29 @@ class KRPC_Responder_Client(KRPC_Sender_Client):
 
     """
     def ping(self, address, timeout=None):
-        if timeout is None:
-            return self.server.ping(address)
-        else:
-            return self.server.ping(address, timeout)
+        filtered_args = self._filter_args([address, timeout])
+        return self.server.ping(*filtered_args)
 
     def find_node(self, address, node_id, timeout=None):
-        if timeout is None:
-            return self.server.find_node(address, node_id)
-        else:
-            return self.server.find_node(address, node_id, timeout)
+        filtered_args = self._filter_args([address, node_id, timeout])
+        return self.server.find_node(*filtered_args)
 
     def get_peers(self, address, target_id, timeout=None):
-        if timeout is None:
-            return self.server.get_peers(address, target_id)
-        else:
-            return self.server.get_peers(address, target_id, timeout)
+        filtered_args = self._filter_args([address, target_id, timeout])
+        return self.server.get_peers(*filtered_args)
 
     def announce_peer(self, address, token, port, timeout=None):
+        filtered_args = self._filter_args([address, token, port, timeout])
+        return self.server.announce_peer(*filtered_args)
+
+    def _filter_args(self, args):
+        """
+        If the timeout is None, remove it so the protocol can choose a default
+        """
+        timeout = args[-1]
         if timeout is None:
-            return self.server.announce_peer(address, token, port)
-        else:
-            return self.server.announce_peer(address, token, port, timeout)
+            del args[-1]
+        return args
 
 def _pickle_dump_string(obj):
     """
