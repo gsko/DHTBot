@@ -64,7 +64,7 @@ class TokenBucket(object):
 
     def can_consume(self, tokens):
         """
-        Tells whether there are enough tokens to consume 'tokens' of them
+        Tells whether there are atleast `tokens` tokens
 
         @returns: True/False
 
@@ -85,7 +85,12 @@ class TokenBucket(object):
 
     @property
     def tokens(self):
-        """Calculate the number of available tokens in the bucket"""
+        """
+        Calculate the number of available tokens in the bucket
+
+        @returns: the number of tokens in the token bucket (int)
+        
+        """
         if self._tokens < self.capacity:
             now = time.time()
             delta = long(round(self.fill_rate * (now - self.timestamp)))
