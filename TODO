@@ -1,0 +1,11 @@
+* In the krpc_sender.KRPC_Sender class, have it so that the protocol
+    stores every transaction along with the address. (ie instead of looking
+    up transactions just with the transaction_id, have it look up with
+    both the transaction_id and the incoming/outgoing address).
+* Have the Quarantiner bind into sendQuery so that it doesn't necessarily
+    need to send its own querying pings. This way, the quarantiner
+    can observe whether the jailed node responds to ANY outbound query
+    giving it a higher chance of success
+* Extend krpc_coder so that it includes optional attributes that are
+    not part of the BEP specification (ie: include a krpc.optional_fields
+    dictionary that contains additions for uTorrent adds)
