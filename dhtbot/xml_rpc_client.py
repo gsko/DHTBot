@@ -24,6 +24,8 @@ class KRPC_Sender_Client(object):
     Note: only sendQuery has been provided. All other methods
     are not yet accessible via the RPC interface
 
+    @see dhtbot.protocols.krpc_sender.KRPC_Sender
+
     """
     def __init__(self, url):
         """
@@ -35,32 +37,65 @@ class KRPC_Sender_Client(object):
         """
         Call sendQuery on the remote protocol
 
-        @see dhtbot.protocols.krpc_sender.KRPC_Sender
+        @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
 
         """
-        # Pickle requires a file, so we simulate one with StringIO
-        pickled_output = StringIO.StringIO()
-        pickle.dump(query, pickled_output)
-        pickled_query = pickled_output.getvalue()
+        pickled_query = _pickle_dump_string(query)
         # Only query needs to be pickled
         # since XML RPC can handle the address (tuple)
         # and timeout (integer)
         pickled_result = self.server.sendQuery(pickled_query, address, timeout)
-        result = pickle.load(StringIO.StringIO(pickled_result))
+        result = _pickle_load_string(pickled_result)
         # Result can be a Response, or one of several exceptions
         # @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
+        # for more details on return values
         return result
 
 class KRPC_Responder_Client(KRPC_Sender_Client):
-    def ping(self, address, timeout=constants.rpctimeout):
-        pass
+    """
+    Support ping/find_node/get_peers/announce_peer over rpc
 
-    def find_node(self, address, node_id, timeout=constants.rpctimeout):
-        pass
+    @see KRPC_Sender_Client
 
-    def get_peers(self, address, target_id, timeout=constants.rpctimeout):
-        pass
+    """
+    def ping(self, address, timeout=None):
+        if timeout is None:
+            return self.server.ping(address)
+        else:
+            return self.server.ping(address, timeout)
 
-    def announce_peer(self, address, token, port, timeout=constants.rpctimeout):
-        pass
+    def find_node(self, address, node_id, timeout=None):
+        if timeout is None:
+            return self.server.find_node(address, node_id)
+        else:
+            return self.server.find_node(address, node_id, timeout)
 
+    def get_peers(self, address, target_id, timeout=None):
+        if timeout is None:
+            return self.server.get_peers(address, target_id)
+        else:
+            return self.server.get_peers(address, target_id, timeout)
+
+    def announce_peer(self, address, token, port, timeout=None):
+        if timeout is None:
+            return self.server.announce_peer(address, token, port)
+        else:
+            return self.server.announce_peer(address, token, port, timeout)
+
+def _pickle_dump_string(obj):
+    """
+    Pickle an object directly to a string
+    """
+    # Simulate file IO with the StringIO object
+    output_file = StringIO.StringIO()
+    pickle.dump(obj, output_file)
+    return output_file.getvalue()
+
+def _pickle_load_string(obj_str):
+    """
+    Unpickle an object directly from a string
+    """
+    # Simulate file IO with the StringIO object
+    input_file = StringIO.StringIO(obj_str)
+    obj = pickle.load(input_file)
+    return obj
