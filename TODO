@@ -1,3 +1,0 @@
-* In krpc_coder, exception raising is a huge mess. Make sure that every
-    exception is being constructed with the valid arguments and that
-    we are raising Exception()'s rather than Exception's
