@@ -29,27 +29,27 @@ class KRPC_Sender_Client(object):
     """
     def __init__(self, url):
         """
-        Open up the XML RPC Connection so that we can make query calls
-        """
-        self.server = xmlrpclib.Server(url)
+    Open up the XML RPC Connection so that we can make query calls
+    """
+    self.server = xmlrpclib.Server(url)
 
-    def sendQuery(self, query, address, timeout):
-        """
-        Call sendQuery on the remote protocol
+def sendQuery(self, query, address, timeout):
+    """
+    Call sendQuery on the remote protocol
 
-        @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
+    @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
 
-        """
-        pickled_query = _pickle_dump_string(query)
-        # Only query needs to be pickled
-        # since XML RPC can handle the address (tuple)
-        # and timeout (integer)
-        pickled_result = self.server.sendQuery(pickled_query, address, timeout)
-        result = _pickle_load_string(pickled_result)
-        # Result can be a Response, or one of several exceptions
-        # @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
-        # for more details on return values
-        return result
+    """
+    pickled_query = _pickle_dump_string(query)
+    # Only query needs to be pickled
+    # since XML RPC can handle the address (tuple)
+    # and timeout (integer)
+    pickled_result = self.server.sendQuery(pickled_query, address, timeout)
+    result = _pickle_load_string(pickled_result)
+    # Result can be a Response, or one of several exceptions
+    # @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
+    # for more details on return values
+    return result
 
 class KRPC_Responder_Client(KRPC_Sender_Client):
     """
@@ -59,29 +59,16 @@ class KRPC_Responder_Client(KRPC_Sender_Client):
 
     """
     def ping(self, address, timeout=None):
-        filtered_args = self._filter_args([address, timeout])
-        return self.server.ping(*filtered_args)
+        return self.server.ping(address, timeout)
 
     def find_node(self, address, node_id, timeout=None):
-        filtered_args = self._filter_args([address, node_id, timeout])
-        return self.server.find_node(*filtered_args)
+        return self.server.find_node(address, node_id, timeout)
 
     def get_peers(self, address, target_id, timeout=None):
-        filtered_args = self._filter_args([address, target_id, timeout])
-        return self.server.get_peers(*filtered_args)
+        return self.server.get_peers(address, target_id, timeout)
 
     def announce_peer(self, address, token, port, timeout=None):
-        filtered_args = self._filter_args([address, token, port, timeout])
-        return self.server.announce_peer(*filtered_args)
-
-    def _filter_args(self, args):
-        """
-        If the timeout is None, remove it so the protocol can choose a default
-        """
-        timeout = args[-1]
-        if timeout is None:
-            del args[-1]
-        return args
+        return self.server.announce_peer(address, token, port, timeout)
 
 def _pickle_dump_string(obj):
     """
