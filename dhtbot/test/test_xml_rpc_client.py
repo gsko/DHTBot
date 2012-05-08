@@ -35,7 +35,7 @@ class HollowXMLRPCServer(object):
         Pass through all non-default arguments
         """
         args = [address]
-        if timeout != constants.rpctimeout:
+        if timeout not in [constants.rpctimeout, None]:
             args.append(timeout)
         return args
 
@@ -44,7 +44,7 @@ class HollowXMLRPCServer(object):
         Pass through all non-default arguments
         """
         args = [address, target_id]
-        if timeout != constants.rpctimeout:
+        if timeout not in [constants.rpctimeout, None]:
             args.append(timeout)
         return args
 
@@ -53,7 +53,7 @@ class HollowXMLRPCServer(object):
         Pass through all non-default arguments
         """
         args = [address, target_id]
-        if timeout != constants.rpctimeout:
+        if timeout not in [constants.rpctimeout, None]:
             args.append(timeout)
         return args
 
@@ -62,7 +62,7 @@ class HollowXMLRPCServer(object):
         Pass through all non-default arguments
         """
         args = [address, port, token]
-        if timeout != constants.rpctimeout:
+        if timeout not in [constants.rpctimeout, None]:
             args.append(timeout)
         return args
 
@@ -120,27 +120,30 @@ class KRPC_Sender_Client_TestCase(ClientTestBase, unittest.TestCase):
 class KRPC_Responder_Client_TestCase(ClientTestBase, unittest.TestCase):
 
     test_target_id = 42
+    test_token = 5556
+    test_port = 9699
 
     def setUp(self):
         ClientTestBase.setUp(self)
         self.kclient = KRPC_Responder_Client("")
 
-    def test_ping_argumentsNonDefaultTimeout(self):
-        args = [self.test_address, self.test_timeout]
-        passed_args = self.kclient.ping(*args)
-        self.assertEquals(args, passed_args)
-
-    def test_ping_argumentsDefaultTimeout(self):
+    def test_ping_arguments(self):
         args = [self.test_address]
         passed_args = self.kclient.ping(*args)
         self.assertEquals(args, passed_args)
 
-    def test_find_node_argumentsNonDefaultTimeout(self):
-        args = [self.test_address, self.test_target_id, self.test_timeout]
+    def test_find_node_arguments(self):
+        args = [self.test_address, self.test_target_id]
         passed_args = self.kclient.find_node(*args)
         self.assertEquals(args, passed_args)
 
-    def test_find_node_argumentsDefaultTimeout(self):
+    def test_get_peers_arguments(self):
         args = [self.test_address, self.test_target_id]
-        passed_args = self.kclient.find_node(*args)
+        passed_args = self.kclient.get_peers(*args)
+        self.assertEquals(args, passed_args)
+
+    def test_announce_peer_arguments(self):
+        args = [self.test_address,
+                self.test_target_id, self.test_token, self.test_port]
+        passed_args = self.kclient.announce_peer(*args)
         self.assertEquals(args, passed_args)

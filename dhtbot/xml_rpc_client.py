@@ -29,27 +29,27 @@ class KRPC_Sender_Client(object):
     """
     def __init__(self, url):
         """
-    Open up the XML RPC Connection so that we can make query calls
-    """
-    self.server = xmlrpclib.Server(url)
+        Open up the XML RPC Connection so that we can make query calls
+        """
+        self.server = xmlrpclib.Server(url)
 
-def sendQuery(self, query, address, timeout):
-    """
-    Call sendQuery on the remote protocol
+    def sendQuery(self, query, address, timeout):
+        """
+        Call sendQuery on the remote protocol
 
-    @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
+        @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
 
-    """
-    pickled_query = _pickle_dump_string(query)
-    # Only query needs to be pickled
-    # since XML RPC can handle the address (tuple)
-    # and timeout (integer)
-    pickled_result = self.server.sendQuery(pickled_query, address, timeout)
-    result = _pickle_load_string(pickled_result)
-    # Result can be a Response, or one of several exceptions
-    # @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
-    # for more details on return values
-    return result
+        """
+        pickled_query = _pickle_dump_string(query)
+        # Only query needs to be pickled
+        # since XML RPC can handle the address (tuple)
+        # and timeout (integer)
+        pickled_result = self.server.sendQuery(pickled_query, address, timeout)
+        result = _pickle_load_string(pickled_result)
+        # Result can be a Response, or one of several exceptions
+        # @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
+        # for more details on return values
+        return result
 
 class KRPC_Responder_Client(KRPC_Sender_Client):
     """
