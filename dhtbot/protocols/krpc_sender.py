@@ -131,13 +131,16 @@ class IKRPC_Sender(Interface):
         @see protocols.errors.KRPCError
         @see protocols.errors.TimeoutError
         @see dhtbot.coding.krpc_coder.InvalidKRPCError
+        @see dhtbot.constants.rpctimeout
+        @see twisted.python.failure.Failure
 
         @returns a deferred whose callback is called with the Response that
-            was received, and whose errback is called with a TimeoutError
-            when the Query times out, or with a KRPCError when a KRPC Error
-            is received in response to the outbound Query, or with an
-            InvalidKRPCError when an error was encountered during
-            the encoding process
+            was received, and whose errback is called with a Failure
+            object that wraps one of TimeoutError, KRPCError, or
+            InvalidKRPCError. TimeoutError when the Query times out.
+            KRPCError when a KRPC Error is received in response to the
+            outbound Query. InvalidKRPCError when an error was encountered
+            during the encoding process
 
         """
 
