@@ -33,7 +33,6 @@ class KRPC_Sender_Server(xmlrpc.XMLRPC):
         deferred.addCallback(_pickle_result)
         return deferred
 
-
 class KRPC_Responder_Server(KRPC_Sender_Server):
     """
     Proxy between the XML RPC Server and the running KRPC_Responder Protocol

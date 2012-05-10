@@ -12,3 +12,5 @@
 * Modify the attributes on Query and Response (in krpc_types.py) from
     _querier and _queried to _from for simplification. Change all
     references as well (consider making it public as well)
+* Refactor the _pickle_load_string and _pickle_dump_string functions into
+    a module shared my the xmlrpc client and server

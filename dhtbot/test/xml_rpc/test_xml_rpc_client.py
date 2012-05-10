@@ -122,6 +122,10 @@ class KRPC_Responder_Client_TestCase(ClientTestBase, unittest.TestCase):
     test_target_id = 42
     test_token = 5556
     test_port = 9699
+    rt reactor
+    r = Example()
+    reactor.listenTCP(7080, server.Site(r))
+    reactor.run()
 
     def setUp(self):
         ClientTestBase.setUp(self)
