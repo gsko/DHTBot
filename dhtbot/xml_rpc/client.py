@@ -31,7 +31,7 @@ class KRPC_Sender_Client(object):
         """
         Open up the XML RPC Connection so that we can make query calls
         """
-        self.server = xmlrpclib.Server(url)
+        self.server = xmlrpclib.ServerProxy(url, allow_none=True)
 
     def sendQuery(self, query, address, timeout):
         """
