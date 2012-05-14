@@ -100,63 +100,53 @@ class IKRPC_Responder(IKRPC_Sender):
 
         """
 
-    def ping(self, address, timeout=constants.rpctimeout):
+    def ping(self, address, timeout=None):
         """
         Send a ping query to the given address
 
-        @param addres: the address where the ping query will be sent
-        @param timeout: the time after which a query is considered "failed".
-                        After the timeout has passed, the returned
-                        deferred will be fire with a TimeoutError and
-                        no further responses will be accepted for this
-                        transaction
+        @param address, timeout: @see the arguments in
+            dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
         @returns a Deferred
-        @see KRPC_Sender.sendQuery
 
         """
 
-    def find_node(self, address, node_id, timeout=constants.rpctimeout):
+    def find_node(self, address, node_id, timeout=None):
         """
         Send a find_node query to the given address
 
-        @param addres: the address where the find_node query will be sent
-        @param timeout: the time after which a query is considered "failed".
-                        After the timeout has passed, the returned
-                        deferred will be fire with a TimeoutError and
-                        no further responses will be accepted for this
-                        transaction
+        @param node_id: the id of the node we are trying to find
+        @param address, timeout: @see the arguments in
+            dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
         @returns a Deferred
-        @see KRPC_Sender.sendQuery
 
         """
 
-    def get_peers(self, address, target_id, timeout=constants.rpctimeout):
+    def get_peers(self, address, target_id, timeout=None):
         """
         Send a get_peers query to the given address
 
-        @param addres: the address where the get_peers query will be sent
-        @param timeout: the time after which a query is considered "failed".
-                        After the timeout has passed, the returned
-                        deferred will be fire with a TimeoutError and
-                        no further responses will be accepted for this
-                        transaction
+        @param target_id: the infohash for which we are trying to get peers
+        @param address, timeout: @see the arguments in
+            dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
         @returns a Deferred
-        @see KRPC_Sender.sendQuery
 
         """
 
-    def announce_peer(self, address, token, port, timeout=constants.rpctimeout):
+    def announce_peer(self, address, target_id, token, port, timeout=None):
         """
         Send an announce_peer query to the given address
 
-        @param addres: the address where the announce_peer query will be sent
-        @param timeout: the time after which a query is considered "failed".
-                        After the timeout has passed, the returned
-                        deferred will be fire with a TimeoutError and
-                        no further responses will be accepted for this
-                        transaction
+        @param target_id: the infohash of the content that this
+            DHT node is performing a put/announce on
+        @param token: the token used to validate this announce_peer
+            query. This token should have been returned in a response
+            to a recent get_peers query
+        @param port: the port on this host on which to announce
+            that there is a BitTorrent peer sharing the content
+            identified by target_id
+        @param address, timeout: @see the arguments in
+            dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
         @returns a Deferred
-        @see KRPC_Sender.sendQuery
 
         """
 
@@ -225,26 +215,31 @@ class KRPC_Responder(KRPC_Sender):
             log.msg("Invalid token/query/querier combination in"
                     " announce_peerReceived")
 
-    def ping(self, address, timeout=constants.rpctimeout):
+    def ping(self, address, timeout=None):
+        timeout = timeout or constants.rpctimeout
         query = Query()
         query.rpctype = "ping"
         return self.sendQuery(query, address, timeout)
 
-    def find_node(self, address, node_id, timeout=constants.rpctimeout):
+    def find_node(self, address, node_id, timeout=None):
+        timeout = timeout or constants.rpctimeout
         query = Query()
         query.rpctype = "find_node"
         query.target_id = node_id
         return self.sendQuery(query, address, timeout)
 
-    def get_peers(self, address, target_id, timeout=constants.rpctimeout):
+    def get_peers(self, address, target_id, timeout=None):
+        timeout = timeout or constants.rpctimeout
         query = Query()
         query.rpctype = "get_peers"
         query.target_id = target_id
         return self.sendQuery(query, address, timeout)
 
-    def announce_peer(self, address, token, port, timeout=constants.rpctimeout):
+    def announce_peer(self, address, target_id, token, port, timeout=None):
+        timeout = timeout or constants.rpctimeout
         query = Query()
         query.rpctype = "announce_peer"
+        query.target_id = target_id
         query.token = token
         query.port = port
         return self.sendQuery(query, address, timeout)
