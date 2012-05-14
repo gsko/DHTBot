@@ -56,22 +56,30 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
     def xmlrpc_ping(self, address, timeout):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.ping"""
         address = tuple(address)
-        return self.node_proto.ping(address, timeout)
+        d = self.node_proto.ping(address, timeout)
+        d.addCallback(_pickle_result)
+        return d
 
     def xmlrpc_find_node(self, address, node_id, timeout):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.find_node"""
         address = tuple(address)
-        return self.node_proto.ping(address, node_id, timeout)
+        d = self.node_proto.find_node(address, node_id, timeout)
+        d.addCallback(_pickle_result)
+        return d
 
     def xmlrpc_get_peers(self, address, target_id, timeout):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.get_peers"""
         address = tuple(address)
-        return self.node_proto.get_peers(address, target_id, timeout)
+        d = self.node_proto.get_peers(address, target_id, timeout)
+        d.addCallback(_pickle_result)
+        return d
 
-    def xmlrpc_announce_peer(self, address, token, port, timeout):
+    def xmlrpc_announce_peer(self, address, target_id, token, port, timeout):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.announce_peer"""
         address = tuple(address)
-        return self.node_proto.announce_peer(address, token, port, timeout)
+        d = self.node_proto.announce_peer(address, token, port, timeout)
+        d.addCallback(_pickle_result)
+        return d
 
 def _pickle_result(result):
     pickled_result = _pickle_dump_string(result)
