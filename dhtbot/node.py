@@ -16,7 +16,7 @@ application = service.Application("DHT Daemon")
 
 # The protocol that will drive the heart of this
 # application
-node_proto = KRPC_Responder(node_id=rand_id)
+node_proto = KRPC_Responder(node_id=node_id)
 
 # Set up the XML RPC wrapper
 xml_rpc = KRPC_Responder_Server(node_proto)
