@@ -12,3 +12,8 @@ a dht daemon. The way to do this is:
     # ctrl-c will then close the daemon
     # The terminal will captured and held until the daemon terminates
     twistd --nodaemon --python DHTBot/dhtbot/node.py
+
+
+Note: the xml_rpc client examples are written using the
+    default python implementation of xmlrpclib. Therefore,
+    all code is blocking and incompatible with twisted
