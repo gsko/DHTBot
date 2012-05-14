@@ -117,14 +117,15 @@ class IKRPC_Sender(Interface):
 
         """
 
-    def sendQuery(self, query, address, timeout):
+    def sendQuery(self, query, address, timeout=None):
         """
         Sends the given krpc query to the given address with the given timeout
 
         @param query: the query that will be encoded and sent
         @param address: the address (ip tuple) that this query will be sent to
         @param timeout: the time after which no responses/errors
-                        will be accepted to this query
+            will be accepted to this query. If timeout is None,
+            the default value of dhtbot.constants.rpctimeout will be used
 
         @see krpc_types.Response
         @see krpc_types.Error
