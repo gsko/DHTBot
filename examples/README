@@ -1,0 +1,9 @@
+direct_protocol contains examples that use the DHT protocol (written
+with Twisted) directly
+
+xml_rpc contains examples that use the xml_rpc/twistd wrapper around
+the protocol and allows you to proxy queries through a long
+running DHT daemon (this is the recommended way)
+
+*Note: it is assumed that you are able to receive UDP response packets
+Your firewall/router should be configured to support this
