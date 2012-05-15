@@ -2,6 +2,8 @@
     stores every transaction along with the address. (ie instead of looking
     up transactions just with the transaction_id, have it look up with
     both the transaction_id and the incoming/outgoing address).
+* Quarantiner in krpc_sender
+* Nice in krpc_responder
 * Have the Quarantiner bind into sendQuery so that it doesn't necessarily
     need to send its own querying pings. This way, the quarantiner
     can observe whether the jailed node responds to ANY outbound query
@@ -14,3 +16,4 @@
     references as well (consider making it public as well)
 * Refactor the _pickle_load_string and _pickle_dump_string functions into
     a module shared my the xmlrpc client and server
+* Testing of the xml_rpc client/server
