@@ -63,16 +63,21 @@ class KRPC_Responder_Client(KRPC_Sender_Client):
         return _pickle_load_string(pickled_result)
 
     def find_node(self, address, node_id, timeout=None):
-        pickled_result = self.server.find_node(address, node_id, timeout)
+        packed_node_id = str(node_id)
+        pickled_result = self.server.find_node(
+                address, packed_node_id, timeout)
         return _pickle_load_string(pickled_result)
 
     def get_peers(self, address, target_id, timeout=None):
-        pickled_result = self.server.get_peers(address, target_id, timeout)
+        packed_target_id = str(target_id)
+        pickled_result = self.server.get_peers(
+                address, packed_target_id, timeout)
         return _pickle_load_string(pickled_result)
 
-    def announce_peer(self, address, token, port, timeout=None):
-        pickled_result = \
-                self.server.announce_peer(address, token, port, timeout)
+    def announce_peer(self, address, target_id, token, port, timeout=None):
+        packed_target_id = str(target_id)
+        pickled_result = self.server.announce_peer(
+                address, packed_target_id,  token, port, timeout)
         return _pickle_load_string(pickled_result)
 
 def _pickle_dump_string(obj):
