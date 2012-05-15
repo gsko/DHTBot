@@ -6,5 +6,6 @@ infohash = 0x56CB72C464912215CB5BC1ADEB77E5A50856D887
 
 response = k.find_node(host, infohash)
 nodes = response.nodes
+
 for node in nodes:
     print node.node_id, node.address
