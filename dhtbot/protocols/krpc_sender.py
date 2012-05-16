@@ -32,10 +32,6 @@ class IKRPC_Sender(Interface):
     describing these messages in detail. The DHT BEP also specifies
     the behavior required of all nodes in the DHT
 
-    The following attributes are used:
-    _reactor: a binding of the reactor that can be passed around
-    node_id: the node id of this KRPC_Sender
-
     @see references/kademlia.pdf
     @see references/bep_0005.html
 
@@ -47,6 +43,11 @@ class IKRPC_Sender(Interface):
         @param routing_table_class: class of the routing table to use
         @param node_id: the node_id that this protocol will use
             for operating on the DHT network
+
+        The resulting KRPC_Sender should have the following public attributes
+            routing_table: an object implementing IRoutingTable
+                @see dhtbot.kademlia.routing_table.IRoutingTable
+            node_id: the id of this node that this protocol is representing
 
         """
 
@@ -179,7 +180,7 @@ class KRPC_Sender(protocol.DatagramProtocol):
     def __init__(self, routing_table_class, node_id):
         self._reactor = reactor
         self.node_id = long(node_id)
-        self.transactions = dict()
+        self._transactions = dict()
         self.routing_table = routing_table_class(self.node_id)
 
     def datagramReceived(self, data, address):
@@ -204,7 +205,7 @@ class KRPC_Sender(protocol.DatagramProtocol):
         if isinstance(krpc, Query):
             self.queryReceived(krpc, address)
         else:
-            transaction = self.transactions.get(krpc._transaction_id, None)
+            transaction = self._transactions.get(krpc._transaction_id, None)
             if transaction is not None:
                 if isinstance(krpc, Response):
                     self.responseReceived(krpc, transaction, address)
@@ -257,7 +258,7 @@ class KRPC_Sender(protocol.DatagramProtocol):
         t.timeout_call = self._reactor.callLater(constants.rpctimeout,
                                 t.deferred.errback, TimeoutError())
         # Store this transaction
-        self.transactions[query._transaction_id] = t
+        self._transactions[query._transaction_id] = t
         # Add a callback that removes this transaction
         # after it has been processed
         t.deferred.addBoth(self._remove_transaction_bothback, t)
@@ -323,8 +324,8 @@ class KRPC_Sender(protocol.DatagramProtocol):
 
         """
         transaction_id = transaction.query._transaction_id
-        if transaction_id in self.transactions:
-                del self.transactions[transaction_id]
+        if transaction_id in self._transactions:
+                del self._transactions[transaction_id]
                 if transaction.timeout_call.active():
                     transaction.timeout_call.cancel()
         return result
@@ -339,7 +340,7 @@ class KRPC_Sender(protocol.DatagramProtocol):
         """
         while True:
             transaction_id = random.getrandbits(constants.transaction_id_size)
-            if transaction_id not in self.transactions:
+            if transaction_id not in self._transactions:
                 return transaction_id
 
 

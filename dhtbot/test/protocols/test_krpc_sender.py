@@ -151,7 +151,7 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
         k_messenger.responseReceived = counter.count
         # Send the query and receive the response
         k_messenger.sendQuery(query, address, timeout)
-        self.assertTrue(query._transaction_id in k_messenger.transactions)
+        self.assertTrue(query._transaction_id in k_messenger._transactions)
         # Make a response that we will "receive"
         response = query.build_response()
         response._queried = 9
@@ -181,7 +181,7 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
         counter = Counter()
         d = self.k_messenger.sendQuery(self.query, address, timeout)
         self.assertTrue(self.query._transaction_id in
-                        self.k_messenger.transactions)
+                        self.k_messenger._transactions)
         # Build the response we will "receive"
         response = self.query.build_response()
         response._queried = 9
@@ -191,7 +191,7 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
         self.k_messenger.datagramReceived(encoded_response, address)
         self.assertEquals(1, counter.num)
         self.assertFalse(self.query._transaction_id in
-                         self.k_messenger.transactions)
+                         self.k_messenger._transactions)
 
     def _error_equality(self, error, expected_error):
                 self.assertEquals(expected_error._transaction_id,
@@ -203,7 +203,7 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
         counter = Counter()
         d = self.k_messenger.sendQuery(self.query, address, timeout)
         self.assertTrue(self.query._transaction_id in
-                        self.k_messenger.transactions)
+                        self.k_messenger._transactions)
         # Build the response we will "receive"
         error = self.query.build_error()
         d.addErrback(self._error_equality, error)
@@ -212,7 +212,7 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
         self.k_messenger.datagramReceived(encoded_error, address)
         self.assertEquals(1, counter.num)
         self.assertFalse(self.query._transaction_id in
-                         self.k_messenger.transactions)
+                         self.k_messenger._transactions)
 
     def _neutralize_invalidKRPCError(self, failure):
         failure.trap(krpc_coder.InvalidKRPCError)
@@ -223,7 +223,7 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
         query.rpctype = "pingpong"
         d = self.k_messenger.sendQuery(query, address, timeout)
         self.assertFalse(self.query._transaction_id in
-                         self.k_messenger.transactions)
+                         self.k_messenger._transactions)
         counter = Counter()
         d.addErrback(self._neutralize_invalidKRPCError)
         d.addErrback(counter.count)
@@ -236,13 +236,13 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
         counter = Counter()
         d = self.k_messenger.sendQuery(self.query, address, timeout)
         self.assertTrue(self.query._transaction_id in
-                        self.k_messenger.transactions)
+                        self.k_messenger._transactions)
         d.errback(TimeoutError())
         d.addErrback(self._neutralize_TimeoutError)
         d.addErrback(counter.count)
         self.assertEquals(0, counter.num)
         self.assertFalse(self.query._transaction_id in
-                         self.k_messenger.transactions)
+                         self.k_messenger._transactions)
 
 class KRPCRateLimiterTestCase(unittest.TestCase):
     def setUp(self):
