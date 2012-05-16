@@ -23,19 +23,12 @@ class IterationError(Exception):
         """
         self.reason = reason
 
+# TODO composition or subclassing?
 class KRPC_Iterator(object):
     """
     KRPC_Iterator abstracts the practice of iterating toward a target ID
 
-    This iterator uses an instance of a KRPC_Responder to send its
-    outgoing queries
     """
-    def __init__(self, node_proto):
-        """
-        @param node_proto: the KRPC_Responder used for sending queries
-        """
-        self.node_proto = node_proto
-
     def find_iterate(self, target_id, nodes=None):
         """
         Run a find_node query on every node in a list and return the new nodes
