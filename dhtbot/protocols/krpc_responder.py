@@ -156,7 +156,7 @@ class KRPC_Responder(KRPC_Sender):
 
     def __init__(self, routing_table_class=TreeRoutingTable, node_id=None):
         node_id = (node_id if node_id is not None
-                          else random.getrandbits(160))
+                           else random.getrandbits(160))
         # Verify the node_id is valid
         basic_coder.encode_network_id(node_id)
         KRPC_Sender.__init__(self, routing_table_class, node_id)
