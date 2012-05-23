@@ -26,3 +26,31 @@ class Clock(object):
 
     def set(self, time):
         self._time = time
+
+
+class Counter(object):
+    """
+    Replaces a method with a running counter of how many times it was called
+
+    >>> import time
+    >>> time.time = Counter()
+    >>> time.time.count
+    0
+    >>> time.time()
+    >>> time.time.count
+    1
+    >>> time.time.reset()
+    >>> time.time.count
+    0
+
+    The original method is NOT called
+
+    """
+    def __init__(self):
+        self.count = 0
+
+    def __call__(self, *args, **kwargs):
+        self.count += 1
+
+    def reset(self):
+        self.count = 0
