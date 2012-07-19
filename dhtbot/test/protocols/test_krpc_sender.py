@@ -7,7 +7,7 @@ from dhtbot.protocols import krpc_sender
 from dhtbot.protocols.krpc_sender import KRPC_Sender, KRPCRateLimiter
 from dhtbot.protocols.errors import TimeoutError
 from dhtbot.coding import krpc_coder
-from dhtbot.test.utils import Clock
+from dhtbot.test.utils import Clock, HollowReactor
 from dhtbot import rate_limiter
 
 class HollowTransport(object):
@@ -40,17 +40,6 @@ class HollowTransport(object):
         sent = self.data != None and self.address != None
         self._reset()
         return sent
-
-class HollowDelayedCall(object):
-    def active(self):
-        return False
-
-    def cancel(self):
-        pass
-
-class HollowReactor(object):
-    def callLater(self, timeout, function, *args, **kwargs):
-        return HollowDelayedCall()
 
 class Counter(object):
     def __init__(self):
