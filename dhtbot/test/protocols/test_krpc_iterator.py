@@ -268,11 +268,6 @@ class KRPC_Iterator_TestCase(unittest.TestCase):
                 + str(exception))
 
     def _iterate_and_returnQueriesAndDeferreds(self, iter_func):
-        ##
-        ##
-        ## TODO
-        ##
-        ##
         # Capture all outbound queries
         # and all deferreds
         sendQuery = self.k_iter.sendQuery
