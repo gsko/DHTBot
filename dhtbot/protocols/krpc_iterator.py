@@ -33,7 +33,7 @@ class IKRPC_Iterator(IKRPC_Responder):
     KRPC_Iterator abstracts the practice of iterating toward a target ID
 
     """
-    def find_iterate(self, target_id, nodes=None):
+    def find_iterate(self, target_id, nodes=None, timeout=None):
         """
         Run a find_node query on every node in a list and return the new nodes
 
@@ -46,6 +46,7 @@ class IKRPC_Iterator(IKRPC_Responder):
         @param nodes: the nodes to start the iteration from (if no nodes
             are provided, nodes will be taken from the routing table)
             This should be an iterable.
+        @param timeout: @see the arguments to KRPC_Responder.timeout
         @returns a deferred that fires its callback with a set of
             all newly discovered nodes. The errback is fired with
             an IterationError if an error occurs in the iteration process.
@@ -54,7 +55,7 @@ class IKRPC_Iterator(IKRPC_Responder):
 
         """
 
-    def get_iterate(self, target_id, nodes=None):
+    def get_iterate(self, target_id, nodes=None, timeout=None):
         """
         Run a get_peers query on every node in a list and return new nodes/peers
 
@@ -67,6 +68,7 @@ class IKRPC_Iterator(IKRPC_Responder):
         @param nodes: the nodes to start the iteration from (if no nodes
             are provided, nodes will be taken from the routing table)
             This should be an iterable.
+        @param timeout: @see the arguments to KRPC_Responder.timeout
         @returns a deferred that fires its callback with a tuple (peers, nodes)
             where
                 peers: a set of all newly discovered peers (if any)
@@ -78,7 +80,6 @@ class IKRPC_Iterator(IKRPC_Responder):
         @see IterationError
 
         """
-# TODO document timeout
 
 class KRPC_Iterator(KRPC_Responder):
 

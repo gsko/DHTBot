@@ -32,11 +32,8 @@ class IKRPC_Responder(IKRPC_Sender):
     """
     KRPC_Sender with better query handling and responses to incoming queries
 
-    This protocol extension ensures that incoming queries are
-    responded to in a BEP compliant way. It also adds incoming
-    and outgoing rate limiting (ie, if too many queries are being
-    received/sent to/from a certain node within a certain time,
-    they will start being dropped)
+    This protocol extension forms responses to incoming
+    queries with compliance to the BEP 005 specification
     
     """
 
