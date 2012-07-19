@@ -20,6 +20,7 @@ from dhtbot.datastore import MemoryDataStore
 from dhtbot.protocols.krpc_sender import KRPC_Sender, IKRPC_Sender
 from dhtbot.kademlia.routing_table import TreeRoutingTable
 
+# TODO
 ## <integrate into="callback chain of query response">
 #   # If there are any nodes in response, lets try to
 #   # add them to the routing table

@@ -17,3 +17,4 @@
 * Refactor the _pickle_load_string and _pickle_dump_string functions into
     a module shared my the xmlrpc client and server
 * Testing of the xml_rpc client/server
+* (See krpc_responder)
