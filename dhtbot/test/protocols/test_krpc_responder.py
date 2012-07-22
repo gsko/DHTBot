@@ -49,10 +49,13 @@ class KRPC_ResponderTestCase(unittest.TestCase):
     def _compare_responses(self, expected, actual, attributes=None):
         # Always check these attributes
         _attrs = ["_transaction_id", "_queried"]
+
+        # Prepare a list of attributes to check
         if attributes is None:
             attributes = _attrs
         else:
             attributes = _attrs + attributes
+
         for attribute in attributes:
             expected_val = getattr(expected, attribute)
             actual_val = getattr(actual, attribute)
@@ -72,7 +75,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         actual_response = kresponder.sendResponse.response
         self._compare_responses(expected_response, actual_response)
 
-    def test_find_node_Received_sendsValidResponseMultiplePeers(self):
+    def test_find_node_Received_sendsValidResponseMultipleNodes(self):
         # Create the protocol and populate its
         # routing table with nodes
         kresponder = self._patched_responder()
@@ -104,7 +107,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         self._compare_responses(expected_response,
                                 actual_response, ["nodes"])
 
-    def test_find_node_Received_sendsValidResponseWithTargetPeer(self):
+    def test_find_node_Received_sendsValidResponseWithTargetNode(self):
         # Create the protocol and populate its
         # routing table with nodes
         # We need a node_id of 75 so that our kbuckets split
@@ -152,6 +155,9 @@ class KRPC_ResponderTestCase(unittest.TestCase):
             if kresponder.routing_table.offer_node(n):
                 node_list.append(n)
 
+        # simulate that a get_peers query has been
+        # received by making a fake get_peers query
+        # and feeding it into "datagramReceived()"
         querying_node = contact.Node(123, test_address)
         incoming_query = Query()
         incoming_query.rpctype = "get_peers"
@@ -160,14 +166,21 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # We have this target id in our routing table
         incoming_query.target_id = 77
 
+        # Create a response object and ensure
+        # and the response (that the node sends)
+        # matches what we made
         expected_response = Response()
         expected_response._queried = kresponder.node_id
         expected_response._transaction_id = 15
+        # the specification calls for the resulting
+        # nodes to be sorted by distance
         node_list.sort(key = lambda node:
                         node.distance(incoming_query.target_id))
         node_list = node_list[:constants.k]
         expected_response.nodes = node_list
 
+        # simulating the incoming query and capture
+        # the outgoing response
         kresponder.datagramReceived(krpc_coder.encode(incoming_query),
                                     test_address)
         actual_response = kresponder.sendResponse.response
