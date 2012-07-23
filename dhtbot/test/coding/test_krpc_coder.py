@@ -36,7 +36,7 @@ class QueryCodingTestCase(unittest.TestCase):
     def test_encode_validPing(self):
         q = Query()
         q._transaction_id = 15
-        q._querier = 2**120
+        q._from = 2**120
         q.rpctype = "ping"
         encoding = encode(q)
         expected_encoding = ('d1:ad2:id20:\x00\x00\x00\x00\x01\x00' +
@@ -47,7 +47,7 @@ class QueryCodingTestCase(unittest.TestCase):
     def test_encode_validFindNode(self):
         q = Query()
         q._transaction_id = 150
-        q._querier = 2**120 + 2**75 + 12098093186316 + 6809318631098608136
+        q._from = 2**120 + 2**75 + 12098093186316 + 6809318631098608136
         q.target_id = 29808160398616
         q.rpctype = "find_node"
         encoding = encode(q)
@@ -60,7 +60,7 @@ class QueryCodingTestCase(unittest.TestCase):
     def test_encode_validGetPeers(self):
         q = Query()
         q._transaction_id = 150
-        q._querier = 2**135 + 2**63 + 8901361731230918250983106831094372
+        q._from = 2**135 + 2**63 + 8901361731230918250983106831094372
         q.target_id = 176098698213
         q.rpctype = "get_peers"
         encoding = encode(q)
@@ -73,29 +73,29 @@ class QueryCodingTestCase(unittest.TestCase):
     def test_encode_and_decode_validPing(self):
         q = Query()
         q._transaction_id = 15
-        q._querier = 2**120
+        q._from = 2**120
         q.rpctype = "ping"
         processed_query = encode_and_decode(q)
         self.assertEquals(processed_query._transaction_id, q._transaction_id)
-        self.assertEquals(processed_query._querier, q._querier)
+        self.assertEquals(processed_query._from, q._from)
         self.assertEquals(processed_query.rpctype, q.rpctype)
 
     def test_encode_and_decode_validFindNode(self):
         q = Query()
         q._transaction_id = 280
-        q._querier = 2**120
+        q._from = 2**120
         q.rpctype = "find_node"
         q.target_id = 2**15
         processed_query = encode_and_decode(q)
         self.assertEquals(processed_query._transaction_id, q._transaction_id)
-        self.assertEquals(processed_query._querier, q._querier)
+        self.assertEquals(processed_query._from, q._from)
         self.assertEquals(processed_query.rpctype, q.rpctype)
         self.assertEquals(processed_query.target_id, q.target_id)
 
     def test_encode_and_decode_invalidRPCType(self):
         q = Query()
         q._transaction_id = 2**160 + 1
-        q._querier = 2**120
+        q._from = 2**120
         q.rpctype = "find_candy"
         q.target_id = 15
         self.assertRaises(InvalidKRPCError, encode_and_decode, q)
@@ -103,7 +103,7 @@ class QueryCodingTestCase(unittest.TestCase):
     def test_encode_and_decode_invalidTargetID(self):
         q = Query()
         q._transaction_id = 15
-        q._querier = 2**120
+        q._from = 2**120
         q.rpctype = "find_node"
         q.target_id = 2**160 + 1
         self.assertRaises(InvalidKRPCError, encode_and_decode, q)
@@ -111,7 +111,7 @@ class QueryCodingTestCase(unittest.TestCase):
     def test_encode_and_decode_invalidPort(self):
         q = Query()
         q._transaction_id = 15
-        q._querier = 2**120
+        q._from = 2**120
         q.rpctype = "announce_peer"
         q.target_id = 2**130
         q.port = 70000
@@ -126,7 +126,7 @@ class ResponseCodingTestCase(unittest.TestCase):
     def test_encode_validGetPeersResponseWithPeers(self):
         r = Response()
         r._transaction_id = 1903890316316
-        r._queried = 169031860931900138093217073128059
+        r._from = 169031860931900138093217073128059
         r.token = 90831
         r.peers = [("127.0.0.1", 80), ("4.2.2.1", 8905), ("0.0.0.0", 0),
                     ("255.255.255.255", 65535), ("8.8.8.8", 53)]
@@ -142,20 +142,20 @@ class ResponseCodingTestCase(unittest.TestCase):
     def test_encode_and_decode_validGetPeersResponseWithPeers(self):
         r = Response()
         r._transaction_id = 1903890316316
-        r._queried = 169031860931900138093217073128059
+        r._from = 169031860931900138093217073128059
         r.token = 90831
         r.peers = [("127.0.0.1", 80), ("4.2.2.1", 8905), ("0.0.0.0", 0),
                     ("8.8.8.8", 53), ("255.255.255.255", 65535)]
         processed_response = encode_and_decode(r)
         self.assertEquals(r._transaction_id, processed_response._transaction_id)
-        self.assertEquals(r._queried, processed_response._queried)
+        self.assertEquals(r._from, processed_response._from)
         self.assertEquals(r.token, processed_response.token)
         self.assertEquals(r.peers, processed_response.peers)
 
     def test_encode_validGetPeersResponseWithNodes(self):
         r = Response()
         r._transaction_id = 1903890316316
-        r._queried = 169031860931900138093217073128059
+        r._from = 169031860931900138093217073128059
         r.token = 90831
         r.nodes = []
         r.nodes.append(Node(2**158, ("127.0.0.1", 890)))
@@ -181,10 +181,10 @@ class ResponseCodingTestCase(unittest.TestCase):
     def test_encode_and_decode_validPingResponse(self):
         r = Response()
         r._transaction_id = 2095
-        r._queried = 2**15
+        r._from = 2**15
         processed_response = encode_and_decode(r)
         self.assertEquals(r._transaction_id, processed_response._transaction_id)
-        self.assertEquals(r._queried, processed_response._queried)
+        self.assertEquals(r._from, processed_response._from)
 
 class ErrorCodingTestCase(unittest.TestCase):
     def test_encode_and_decode_validError(self):

@@ -103,7 +103,7 @@ def _query_decoder(rpc_dict):
 
     """
     q = Query()
-    q._querier = basic_coder.decode_network_id(rpc_dict['a']['id'])
+    q._from = basic_coder.decode_network_id(rpc_dict['a']['id'])
     q.rpctype = rpctype = rpc_dict['q']
 
     if rpctype == 'ping':
@@ -130,7 +130,7 @@ def _response_decoder(rpc_dict):
     """
     r = Response()
     # All responses have querier IDs
-    r._queried = basic_coder.decode_network_id(rpc_dict['r']['id'])
+    r._from = basic_coder.decode_network_id(rpc_dict['r']['id'])
     # find_node always returns a list of nodes
     # get_peers sometimes returns a list of nodes
     if 'nodes' in rpc_dict['r']:
@@ -213,7 +213,7 @@ def _encode(message):
 def _query_encoder(query):
     """@see encode"""
     query_dict = {"q": query.rpctype,
-                  "a": { "id": basic_coder.encode_network_id(query._querier)}}
+                  "a": { "id": basic_coder.encode_network_id(query._from)}}
     # Perform specific rpc encoding
     if query.rpctype == 'ping':
         pass
@@ -234,7 +234,7 @@ def _query_encoder(query):
 
 def _response_encoder(response):
     """@see encode"""
-    resp_dict = {"r": {"id": basic_coder.encode_network_id(response._queried)}}
+    resp_dict = {"r": {"id": basic_coder.encode_network_id(response._from)}}
     if response.nodes is not None:
         encoded_nodes = [contact.encode_node(node) for node in response.nodes]
         resp_dict['r']['nodes'] = "".join(encoded_nodes)

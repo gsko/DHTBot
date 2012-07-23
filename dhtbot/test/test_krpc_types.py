@@ -17,7 +17,7 @@ class QueryTestCase(unittest.TestCase):
     def setUp(self):
         self.q = Query()
         self.q._transaction_id = 500
-        self.q._querier = 27
+        self.q._from = 27
         self.q.rpctype = "ping"
 
     def test_build_response(self):
@@ -40,7 +40,7 @@ class QueryTestCase(unittest.TestCase):
         self.assertEquals(message, e.message)
 
     def test_repr(self):
-        expected_repr = "<Query: _transaction_id=500 rpctype=ping _querier=27>"
+        expected_repr = "<Query: _transaction_id=500 rpctype=ping _from=27>"
         self.assertEquals(expected_repr, repr(self.q))
 
 class ResponseTestCase(unittest.TestCase):

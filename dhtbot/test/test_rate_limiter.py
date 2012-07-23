@@ -25,7 +25,7 @@ class RateLimiterTestCase(TestingBase, unittest.TestCase):
         self.address = ("127.0.0.1", 55)
         self.query = Query()
         self.query.rpctype = "ping"
-        self.query._querier = 15
+        self.query._from = 15
         self.query._transaction_id = 99
         self.packet = krpc_coder.encode(self.query)
         # Patch in hardcoded value for the bandwidth

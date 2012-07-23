@@ -234,7 +234,7 @@ class KRPC_Sender(protocol.DatagramProtocol):
 
     def sendQuery(self, query, address, timeout):
         # Fill in the "from" field of the query
-        query._querier = self.node_id
+        query._from = self.node_id
         query._transaction_id = self._generate_transaction_id()
         # Try to send the krpc, there is an encoding error
         # immediately return the error to the user 
@@ -266,7 +266,7 @@ class KRPC_Sender(protocol.DatagramProtocol):
 
     def sendResponse(self, response, address):
         # Fill out the "from" field on the response before sending
-        response._queried = self.node_id
+        response._from = self.node_id
         self.sendKRPC(response, address)
 
     def sendError(self, error, address):
@@ -283,9 +283,9 @@ class KRPC_Sender(protocol.DatagramProtocol):
         """
         # Pull the node corresponding to this response out
         # of our routing table, or create it if it doesn't exist
-        rt_node = self.routing_table.get_node(response._queried)
+        rt_node = self.routing_table.get_node(response._from)
         responsenode = (rt_node if rt_node is not None
-                        else contact.Node(response._queried, address))
+                        else contact.Node(response._from, address))
         responsenode.successful_query(transaction.time)
         self.routing_table.offer_node(responsenode)
         # Pass the response further down the callback chain

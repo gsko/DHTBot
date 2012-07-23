@@ -44,7 +44,7 @@ class HollowXMLRPCServer(object):
         input = StringIO.StringIO(pickled_query)
         query = pickle.load(input)
         response = query.build_response()
-        response._queried = 11111
+        response._from = 11111
         output = StringIO.StringIO()
         pickle.dump(response, output)
         return output.getvalue()
@@ -135,7 +135,7 @@ class KRPC_Sender_Client_TestCase(ClientTestBase, unittest.TestCase):
     def test_sendQuery_arguments(self):
         query = Query()
         query.rpctype = "ping"
-        query._querier = 1515
+        query._from = 1515
         query._transaction_id = 636363
         _ignored = self.kclient.sendQuery(query,
                             self.test_address, self.test_timeout)

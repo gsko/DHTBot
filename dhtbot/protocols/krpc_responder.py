@@ -261,9 +261,9 @@ class Quarantiner(proxyForInterface(IKRPC_Responder)):
 
     def queryReceived(self, query, address):
         # Find or create node corresponding to this query
-        rt_node = self.routing_table.get_node(query._querier)
+        rt_node = self.routing_table.get_node(query._from)
         querying_node = (rt_node if rt_node is not None
-                         else contact.Node(query._querier, address))
+                         else contact.Node(query._from, address))
         # Test the querying_node to see if it responds
         # to a ping query, if it does, add it to the routing table
         # @see dhtbot.quarantine.Quarantine.jail
@@ -334,7 +334,7 @@ class _TokenGenerator(object):
         """
         Create the hash code for the given query/address/secret combination
         """
-        node_id = query._querier
+        node_id = query._from
         infohash = query.target_id
         hash = self.hash_constructor()
         # The hash code relies on the querying node's ID,

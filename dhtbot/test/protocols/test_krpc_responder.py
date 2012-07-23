@@ -48,7 +48,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
 
     def _compare_responses(self, expected, actual, attributes=None):
         # Always check these attributes
-        _attrs = ["_transaction_id", "_queried"]
+        _attrs = ["_transaction_id", "_from"]
 
         # Prepare a list of attributes to check
         if attributes is None:
@@ -65,10 +65,10 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         kresponder = self._patched_responder()
         incoming_query = Query()
         incoming_query.rpctype = "ping"
-        incoming_query._querier = 123
+        incoming_query._from = 123
         incoming_query._transaction_id = 15
         expected_response = Response()
-        expected_response._queried = kresponder.node_id
+        expected_response._from = kresponder.node_id
         expected_response._transaction_id = 15
         kresponder.datagramReceived(krpc_coder.encode(incoming_query),
                                     test_address)
@@ -89,12 +89,12 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         querying_node = contact.Node(123, test_address)
         incoming_query = Query()
         incoming_query.rpctype = "find_node"
-        incoming_query._querier = querying_node.node_id
+        incoming_query._from = querying_node.node_id
         incoming_query._transaction_id = 15
         incoming_query.target_id = 777777
 
         expected_response = Response()
-        expected_response._queried = kresponder.node_id
+        expected_response._from = kresponder.node_id
         expected_response._transaction_id = 15
         node_list.sort(key = lambda node:
                         node.distance(incoming_query.target_id))
@@ -123,13 +123,13 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         querying_node = contact.Node(123, test_address)
         incoming_query = Query()
         incoming_query.rpctype = "find_node"
-        incoming_query._querier = querying_node.node_id
+        incoming_query._from = querying_node.node_id
         incoming_query._transaction_id = 15
         # We have this target id in our routing table
         incoming_query.target_id = 77
 
         expected_response = Response()
-        expected_response._queried = kresponder.node_id
+        expected_response._from = kresponder.node_id
         expected_response._transaction_id = 15
         node_list.sort(key = lambda node:
                         node.distance(incoming_query.target_id))
@@ -161,7 +161,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         querying_node = contact.Node(123, test_address)
         incoming_query = Query()
         incoming_query.rpctype = "get_peers"
-        incoming_query._querier = querying_node.node_id
+        incoming_query._from = querying_node.node_id
         incoming_query._transaction_id = 15
         # We have this target id in our routing table
         incoming_query.target_id = 77
@@ -170,7 +170,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # and the response (that the node sends)
         # matches what we made
         expected_response = Response()
-        expected_response._queried = kresponder.node_id
+        expected_response._from = kresponder.node_id
         expected_response._transaction_id = 15
         # the specification calls for the resulting
         # nodes to be sorted by distance
@@ -195,13 +195,13 @@ class KRPC_ResponderTestCase(unittest.TestCase):
                                         peer_num in range(10)]
         incoming_query = Query()
         incoming_query.rpctype = "get_peers"
-        incoming_query._querier = 555
+        incoming_query._from = 555
         incoming_query._transaction_id = 15
         # We have this target id in our routing table
         incoming_query.target_id = 77
 
         expected_response = Response()
-        expected_response._queried = kresponder.node_id
+        expected_response._from = kresponder.node_id
         expected_response._transaction_id = 15
         expected_response.peers = peers
 
@@ -223,7 +223,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # get_peers creation and "receiving"
         query = Query()
         query.rpctype = "get_peers"
-        query._querier = 123
+        query._from = 123
         query._transaction_id = 150
         query.target_id = 800
         kresponder.datagramReceived(krpc_coder.encode(query),
@@ -232,7 +232,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # announce_peer creation and "receiving"
         incoming_query = Query()
         incoming_query._transaction_id = 999
-        incoming_query._querier = query._querier
+        incoming_query._from = query._from
         incoming_query.rpctype = "announce_peer"
         incoming_query.token = response.token
         incoming_query.port = 55
@@ -240,7 +240,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
 
         # Test the announce_peer response
         expected_response = Response()
-        expected_response._queried = kresponder.node_id
+        expected_response._from = kresponder.node_id
         expected_response._transaction_id = incoming_query._transaction_id
         # Reset the response grabber
         kresponder.sendResponse.response = None
@@ -258,7 +258,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # get_peers creation and "receiving"
         query = Query()
         query.rpctype = "get_peers"
-        query._querier = 123
+        query._from = 123
         query._transaction_id = 150
         query.target_id = 800
         kresponder.datagramReceived(krpc_coder.encode(query),
@@ -267,7 +267,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # announce_peer creation and "receiving"
         incoming_query = Query()
         incoming_query._transaction_id = 999
-        incoming_query._querier = query._querier
+        incoming_query._from = query._from
         incoming_query.rpctype = "announce_peer"
         incoming_query.token = response.token
         incoming_query.port = 55
@@ -275,7 +275,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
 
         # Test the announce_peer response
         expected_response = Response()
-        expected_response._queried = kresponder.node_id
+        expected_response._from = kresponder.node_id
         expected_response._transaction_id = incoming_query._transaction_id
         # Reset the response grabber
         kresponder.sendResponse.response = None
@@ -288,7 +288,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # as a peer
         query = Query()
         query.rpctype = "get_peers"
-        query._querier = 123
+        query._from = 123
         query._transaction_id = 9809831
         query.target_id = 800
         kresponder.datagramReceived(krpc_coder.encode(query),
@@ -308,7 +308,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # get_peers creation and "receiving"
         query = Query()
         query.rpctype = "get_peers"
-        query._querier = 123
+        query._from = 123
         query._transaction_id = 150
         query.target_id = 800
         kresponder.datagramReceived(krpc_coder.encode(query),
@@ -317,7 +317,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # announce_peer creation and "receiving"
         incoming_query = Query()
         incoming_query._transaction_id = 999
-        incoming_query._querier = query._querier
+        incoming_query._from = query._from
         incoming_query.rpctype = "announce_peer"
         incoming_query.token = 5858585858 # this is an invalid token
         incoming_query.port = 55
@@ -325,7 +325,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
 
         # Test the announce_peer response
         expected_response = Response()
-        expected_response._queried = kresponder.node_id
+        expected_response._from = kresponder.node_id
         expected_response._transaction_id = incoming_query._transaction_id
         # Reset the response grabber
         kresponder.sendResponse.response = None
@@ -339,7 +339,7 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         # as a peer
         query = Query()
         query.rpctype = "get_peers"
-        query._querier = 123
+        query._from = 123
         query._transaction_id = 9809831
         query.target_id = 800
         kresponder.datagramReceived(krpc_coder.encode(query),
@@ -364,7 +364,7 @@ class _TokenGeneratorTestCase(unittest.TestCase):
         self.address = ("127.0.0.1", 5555)
         # Attach a standard test query
         query = Query()
-        query._querier = 15125
+        query._from = 15125
         query.rpctype = "get_peers"
         query.target_id = 90809
         self.query = query

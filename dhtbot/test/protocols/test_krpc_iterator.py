@@ -101,7 +101,7 @@ class KRPC_Iterator_TestCase(unittest.TestCase):
         node_id = 1
         for (query, deferred), node in zip(deferreds, result_nodes):
             response = query.build_response(nodes=[node])
-            response._queried = node_id
+            response._from = node_id
             node_id += 1
             deferred.callback(response)
         expected_nodes = set(result_nodes)
@@ -157,7 +157,7 @@ class KRPC_Iterator_TestCase(unittest.TestCase):
         for (query, deferred), node, peer in \
             zip(deferreds, result_nodes, result_peers):
             response = query.build_response(nodes=[node], peers=[peer])
-            response._queried = node_id
+            response._from = node_id
             node_id += 1
             deferred.callback(response)
 
@@ -199,7 +199,7 @@ class KRPC_Iterator_TestCase(unittest.TestCase):
             # into the subdeferreds
             response = query.build_response(nodes=nodes)
             # Any node id works
-            response._queried = test_node_id
+            response._from = test_node_id
             test_node_id += 1
             if query.rpctype == "get_peers":
                 response.token = 555

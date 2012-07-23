@@ -38,7 +38,7 @@ class Query(_KRPC):
     A Query message has a type, querier ID, and various other details
 
     rpctype: one of ["ping", "find_node", "get_peers", "announce_peer"]
-    _querier: the node ID of the node from which this query originates
+    _from: the node ID of the node from which this query originates
     target_id: the target ID of this query (every query except for
               ping uses the target_id field)
     token: the token used to validate an announce_peer query
@@ -49,7 +49,7 @@ class Query(_KRPC):
     def __init__(self):
         _KRPC.__init__(self)
         self.rpctype = None
-        self._querier = None
+        self._from = None
         self.target_id = None
         self.token = None
         self.port = None
@@ -86,7 +86,7 @@ class Query(_KRPC):
 
     def __repr__(self):
         printable_attributes = ['_transaction_id', 'rpctype',
-                    '_querier', 'target_id', 'token', 'port']
+                    '_from', 'target_id', 'token', 'port']
         return "<Query: %s>" % self._build_repr(printable_attributes)
     
 class Response(_KRPC):
@@ -98,19 +98,19 @@ class Response(_KRPC):
            that an announcing peer previously issued a get_peers request
     values: a list of peers that are associated with the target ID
             as specified in the originating query
-    _queried: the node that received the original query
+    _from: the node that received the original query
 
     """
     def __init__(self):
         _KRPC.__init__(self)
-        self._queried = None
+        self._from = None
         self.nodes = None
         self.token = None
         self.peers = None
         self.rpctype = None
 
     def __repr__(self):
-        printable_attributes = ['_transaction_id', '_queried',
+        printable_attributes = ['_transaction_id', '_from',
                     'nodes', 'token', 'peers', 'rpctype']
         return "<Response: %s>" % self._build_repr(printable_attributes)
 

@@ -85,28 +85,28 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
     def test_krpcReceived(self):
         query = Query()
         query._transaction_id = 50
-        query._querier = 58
+        query._from = 58
         query.rpctype = "ping"
         self._patch_counter_and_input_krpc(query, "krpcReceived")
 
     def test_queryReceived(self):
         query = Query()
         query._transaction_id = 50
-        query._querier = 58
+        query._from = 58
         query.rpctype = "ping"
         self._patch_counter_and_input_krpc(query, "queryReceived")
 
     def test_ping_Received(self):
         query = Query()
         query._transaction_id = 50
-        query._querier = 58
+        query._from = 58
         query.rpctype = "ping"
         self._patch_counter_and_input_krpc(query, query.rpctype + "_Received")
 
     def test_find_node_Received(self):
         query = Query()
         query._transaction_id = 50
-        query._querier = 58
+        query._from = 58
         query.rpctype = "find_node"
         query.target_id = 1500
         self._patch_counter_and_input_krpc(query, query.rpctype + "_Received")
@@ -114,7 +114,7 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
     def test_get_peers_Received(self):
         query = Query()
         query._transaction_id = 50
-        query._querier = 58
+        query._from = 58
         query.rpctype = "get_peers"
         query.target_id = 1500
         self._patch_counter_and_input_krpc(query, query.rpctype + "_Received")
@@ -122,7 +122,7 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
     def test_announce_peer_Received(self):
         query = Query()
         query._transaction_id = 50
-        query._querier = 58
+        query._from = 58
         query.rpctype = "announce_peer"
         query.target_id = 1500
         query.port = 5125
@@ -143,7 +143,7 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
         self.assertTrue(query._transaction_id in k_messenger._transactions)
         # Make a response that we will "receive"
         response = query.build_response()
-        response._queried = 9
+        response._from = 9
         k_messenger.datagramReceived(krpc_coder.encode(response), address)
         _restore_reactor()
         self.assertEquals(1, counter.num)
@@ -162,8 +162,8 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
     def _response_equality(self, response, expected_response):
             self.assertEquals(expected_response._transaction_id,
                               response._transaction_id)
-            self.assertEquals(expected_response._queried,
-                              response._queried)
+            self.assertEquals(expected_response._from,
+                              response._from)
             return response
 
     def test_callback(self):
@@ -173,7 +173,7 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
                         self.k_messenger._transactions)
         # Build the response we will "receive"
         response = self.query.build_response()
-        response._queried = 9
+        response._from = 9
         d.addCallback(self._response_equality, response)
         d.addCallback(counter.count)
         encoded_response = krpc_coder.encode(response)
@@ -242,7 +242,7 @@ class KRPCRateLimiterTestCase(unittest.TestCase):
         self.address = ("127.0.0.1", 55)
         self.query = Query()
         self.query.rpctype = "ping"
-        self.query._querier = 15
+        self.query._from = 15
         self.query._transaction_id = 99
         self.packet = krpc_coder.encode(self.query)
         # Patch in hardcoded value for the bandwidth
