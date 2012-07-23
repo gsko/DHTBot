@@ -7,14 +7,32 @@ from twisted.internet import reactor, defer
 from twisted.python.monkey import MonkeyPatcher
 
 from dhtbot import constants, xml_rpc
-from dhtbot.xml_rpc.client import (KRPC_Sender_Client, KRPC_Responder_Client,
-        _pickle_dump_string)
+from dhtbot.contact import Node
+from dhtbot.xml_rpc.client import (KRPC_Sender_Client,
+        KRPC_Responder_Client, KRPC_Iterator_Client)
+from dhtbot.xml_rpc.pickle_utils import pickle_to_str
 from dhtbot.krpc_types import Query
 
 monkey_patcher = MonkeyPatcher()
 
 class HollowXMLRPCServer(object):
+    """
+    With the exception of sendQuery, all of the public
+    functions of this class act as proxy functions that
+    simply pass through all of the received arguments.
 
+    This means that this "server" can be used to
+    collect all outbound xml rpc client arguments.
+
+    (Hint: monkey patch this class over
+    'ServerProxy' attribute of xmlrpclib for the
+    dhtbot.xml_rpc.client module and compare the
+    outbound arguments to those that you expected)
+
+    This class is used in the KRPC_Responder_Client and
+    KRPC_Iterator_Client test cases.
+
+    """
     def __init__(self, url, allow_none=False):
         pass
 
@@ -32,41 +50,46 @@ class HollowXMLRPCServer(object):
         return output.getvalue()
     
     def ping(self, address, timeout=constants.rpctimeout):
-        """
-        Pass through all non-default arguments
-        """
         args = [address]
-        if timeout not in (constants.rpctimeout, None):
-            args.append(timeout)
-        return _pickle_dump_string(args)
+        self._none_check(args, timeout)
+        return pickle_to_str(args)
 
     def find_node(self, address, target_id, timeout=constants.rpctimeout):
-        """
-        Pass through all non-default arguments
-        """
         args = [address, target_id]
-        if timeout not in (constants.rpctimeout, None):
-            args.append(timeout)
-        return _pickle_dump_string(args)
+        self._none_check(args, timeout)
+        return pickle_to_str(args)
 
     def get_peers(self, address, target_id, timeout=constants.rpctimeout):
-        """
-        Pass through all non-default arguments
-        """
         args = [address, target_id]
-        if timeout not in (constants.rpctimeout, None):
-            args.append(timeout)
-        return _pickle_dump_string(args)
+        self._none_check(args, timeout)
+        return pickle_to_str(args)
 
     def announce_peer(self, address, target_id, token,
             port, timeout=constants.rpctimeout):
-        """
-        Pass through all non-default arguments
-        """
         args = [address, target_id, token, port]
-        if timeout not in (constants.rpctimeout, None):
-            args.append(timeout)
-        return _pickle_dump_string(args)
+        self._none_check(args, timeout)
+        return pickle_to_str(args)
+
+    def find_iterate(self, target_id, nodes=None, timeout=None):
+        args = [target_id]
+        self._none_check(args, nodes, timeout)
+        return pickle_to_str(args)
+
+    def get_iterate(self, target_id, nodes=None, timeout=None):
+        args = [target_id]
+        self._none_check(args, nodes, timeout)
+        return pickle_to_str(args)
+
+    def _none_check(self, args, *args_to_check):
+        """
+        Add all non-None arguments to the args list
+        since they will be tested for
+
+        """
+        for arg in args_to_check:
+            if arg is not None:
+                args.append(arg)
+        
 
     def _valid_sendQuery_arguments(self, query, address, timeout):
         """
@@ -81,13 +104,13 @@ class HollowXMLRPCServer(object):
         output = StringIO.StringIO()
         pickle.dump(query, output)
         pickled_query = output.getvalue()
-        equal = (pickled_query == self.pickled_query and
+        is_equal = (pickled_query == self.pickled_query and
                  address == self.address and
                  timeout == self.timeout)
         self.pickled_query = None
         self.address = None
         self.timeout = None
-        return equal
+        return is_equal
 
 class ClientTestBase(object):
     """
@@ -120,7 +143,13 @@ class KRPC_Sender_Client_TestCase(ClientTestBase, unittest.TestCase):
                         query, self.test_address, self.test_timeout))
 
 class KRPC_Responder_Client_TestCase(ClientTestBase, unittest.TestCase):
+    """
+    These cases test for whether the XML RPC client passes
+    its arguments to the XML RPC server properly
 
+    @see HollowXMLRPCServer
+
+    """
     test_target_id = 42
     test_token = 5556
     test_port = 9699
@@ -158,3 +187,55 @@ class KRPC_Responder_Client_TestCase(ClientTestBase, unittest.TestCase):
         # since that is how it is sent
         args[1] = str(args[1])
         self.assertEquals(args, passed_args)
+
+class KRPC_Iterator_Client_TestCase(ClientTestBase, unittest.TestCase):
+    """
+    These cases test for whether the XML RPC client passes
+    its arguments to the XML RPC server properly
+
+    @see HollowXMLRPCServer
+
+    """
+
+    # Use 20 nodes to test as input
+    # arguments to the XML RPC client
+    test_nodes = [Node(num, ("127.0.0.%d" % num, num)) for num in xrange(2, 22)]
+    test_target_id = 55
+
+    def setUp(self):
+        ClientTestBase.setUp(self)
+        self.kclient = KRPC_Iterator_Client("")
+
+    def test_find_iterate_arguments(self):
+        self._test_iterate_funcs_args(
+                self.kclient.find_iterate)
+
+    def test_get_iterate_arguments(self):
+        self._test_iterate_funcs_args(
+                self.kclient.get_iterate)
+
+    def _test_iterate_funcs_args(self, func):
+        expected_args = [self.test_target_id]
+        actual_args = func(*expected_args)
+        # convert the target_id into a str
+        # since that is how it is sent
+        expected_args[0] = str(expected_args[0])
+        self.assertEquals(expected_args, actual_args)
+
+    def test_find_iterate_argumentsWithNodes(self):
+        self._test_iterate_funcs_argsWithNodes(
+                self.kclient.find_iterate)
+    
+    def test_get_iterate_argumentsWithNodes(self):
+        self._test_iterate_funcs_argsWithNodes(
+                self.kclient.get_iterate)
+
+    def _test_iterate_funcs_argsWithNodes(self, func):
+        expected_args = [self.test_target_id, self.test_nodes]
+        actual_args = func(*expected_args)
+        # convert the target_id into a str
+        # and convert pickle the nodes
+        # since that is how they are sent
+        expected_args[0] = str(expected_args[0])
+        expected_args[1] = pickle_to_str(self.test_nodes)
+        self.assertEquals(expected_args, actual_args)

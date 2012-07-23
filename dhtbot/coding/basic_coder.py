@@ -26,6 +26,9 @@ class InvalidDataError(Exception):
     def __repr__(self):
         return ("<InvalidDataError(%s, %s)>" % (self.message, self.value))
 
+    __str__ = __repr__
+
+
 def btol(network_order_byte_string):
     """Convert the bencoded int into a python long"""
     return long(str(network_order_byte_string).encode("hex"), 16)

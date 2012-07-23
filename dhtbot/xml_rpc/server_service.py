@@ -9,8 +9,7 @@ from twisted.web import xmlrpc
 
 from dhtbot.protocols.krpc_sender import IKRPC_Sender
 from dhtbot.protocols.krpc_responder import IKRPC_Responder
-# TODO refactor these functions into a common module
-from dhtbot.xml_rpc.client import _pickle_load_string, _pickle_dump_string
+from dhtbot.xml_rpc.client import unpickle_from_str, pickle_to_str
 
 class KRPC_Sender_Server(xmlrpc.XMLRPC):
     """
@@ -24,7 +23,10 @@ class KRPC_Sender_Server(xmlrpc.XMLRPC):
 
     # Allow this XMLRPC server to transmit None
     allowNone = True
-    # TODO fix bug
+    # useDateTime was enabled because otherwise
+    # exceptions were triggered in the XML RPC connection
+    # process. (This may be able to be removed)
+    # TODO investigate
     useDateTime = True
 
     def __init__(self, node_proto):
@@ -34,7 +36,7 @@ class KRPC_Sender_Server(xmlrpc.XMLRPC):
         """@see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery"""
         address = tuple(address)
         # The query was pickled so it could be sent over XMLRPC
-        query = _pickle_load_string(pickled_query)
+        query = unpickle_from_str(pickled_query)
         deferred = self.node_proto.sendQuery(query, address, timeout)
         # Pickle the result so that it can be sent over XMLRPC
         deferred.addCallback(_pickle_result)
@@ -86,5 +88,5 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         return d
 
 def _pickle_result(result):
-    pickled_result = _pickle_dump_string(result)
+    pickled_result = _pickle_to_str(result)
     return pickled_result
