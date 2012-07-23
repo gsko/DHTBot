@@ -11,8 +11,5 @@
 * Extend krpc_coder so that it includes optional attributes that are
     not part of the BEP specification (ie: include a krpc.optional_fields
     dictionary that contains additions for uTorrent adds)
-* Modify the attributes on Query and Response (in krpc_types.py) from
-    _querier and _queried to _from for simplification. Change all
-    references as well (consider making it public as well)
 * Testing of the xml_rpc server
 * (See krpc_responder)
