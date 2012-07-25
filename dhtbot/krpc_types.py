@@ -85,9 +85,24 @@ class Query(_KRPC):
         return e
 
     def __repr__(self):
-        printable_attributes = ['_transaction_id', 'rpctype',
-                    '_from', 'target_id', 'token', 'port']
+        printable_attributes = self._get_attrs()
         return "<Query: %s>" % self._build_repr(printable_attributes)
+
+    # TODO check if there is a way to
+    # programmaticaly get this list (dir() + function filtering)
+    def _get_attrs(self):
+        return ('_transaction_id', 'rpctype', 
+                '_from', 'target_id', 'token', 'port')
+
+    def __eq__(self, other):
+        attributes = self._get_attrs()
+        return all(hasattr(other, attribute) and
+                getattr(other, attribute) == getattr(self, attribute)
+                for attribute in attributes)
+        # TODO DRY (in Response)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
 class Response(_KRPC):
     """
@@ -110,9 +125,25 @@ class Response(_KRPC):
         self.rpctype = None
 
     def __repr__(self):
-        printable_attributes = ['_transaction_id', '_from',
-                    'nodes', 'token', 'peers', 'rpctype']
+        printable_attributes = self._get_attrs()
         return "<Response: %s>" % self._build_repr(printable_attributes)
+
+    # TODO see if we can replace these with a function (in Query too)
+    def _get_attrs(self):
+        return ('_transaction_id', '_from',
+                    'nodes', 'token', 'peers', 'rpctype')
+
+    def __eq__(self, other):
+        attributes = self._get_attrs()
+        return all(hasattr(other, attribute) and
+                getattr(other, attribute) == getattr(self, attribute)
+                for attribute in attributes)
+        # TODO refactor this attribute checking
+        # outside of both Response/Query into a common place (DRY)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+ 
 
 class Error(_KRPC):
     """
