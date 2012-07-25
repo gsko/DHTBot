@@ -43,14 +43,51 @@ class QueryTestCase(unittest.TestCase):
         expected_repr = "<Query: _transaction_id=500 rpctype=ping _from=27>"
         self.assertEquals(expected_repr, repr(self.q))
 
+    def test__eq__(self):
+        q1, q2 = self._gen_equal_announce_peers()
+        self.assertEquals(q1, q2)
+
+    def test__ne___(self):
+        q1, q2 = self._gen_equal_announce_peers()
+        q1._transaction_id = 88
+        q2._transaction_id = 66
+        self.assertNotEquals(q1, q2)
+
+    def _gen_equal_announce_peers(self):
+        q1 = Query()
+        q2 = Query()
+        q1._transaction_id = q2._transaction_id = 99
+        q1._from = q2._from = 55
+        q1.rpctype = q2.rpctype = "announce_peer"
+        q1.token = q2.token = 13
+        q1.port = q2.port = 123
+        q1.target_id = q2.target_id = 66
+        self.assertEquals(q1, q2)
+        return (q1, q2)
+
+
 class ResponseTestCase(unittest.TestCase):
-    def test_repr(self):
+
+    def setUp(self):
         r = Response()
-        r._transaction_id = 18095
-        r.queried = 15
-        r.token = 1980
-        expected_repr = "<Response: _transaction_id=18095 token=1980>"
-        self.assertEquals(expected_repr, str(r))
+        r2 = Response()
+        r2._transaction_id = r._transaction_id = 18095
+        r2._from = r._from = 15
+        r2.token = r.token = 1980
+        self.r = r
+        self.r2 = r2
+
+    def test_repr(self):
+        expected_repr = "<Response: _transaction_id=18095 _from=15 token=1980>"
+        self.assertEquals(expected_repr, str(self.r))
+
+    def test__eq__(self):
+        self.assertEquals(self.r, self.r2)
+
+    def test__ne__(self):
+        self.r._from = 1111
+        self.r2._from = 5555
+        self.assertNotEquals(self.r, self.r2)
 
 class ErrorTestCase(unittest.TestCase):
     def test_repr(self):
