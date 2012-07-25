@@ -34,6 +34,7 @@ class KRPC_Sender_Server(xmlrpc.XMLRPC):
 
     def xmlrpc_sendQuery(self, pickled_query, address, timeout):
         """@see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery"""
+        # xml_rpc encodes tuples into lists, so we reverse the process
         address = tuple(address)
         # The query was pickled so it could be sent over XMLRPC
         query = unpickle_from_str(pickled_query)
