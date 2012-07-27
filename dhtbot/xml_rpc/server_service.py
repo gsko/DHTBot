@@ -4,12 +4,13 @@ An XML RPC wrapper around the DHT protocols
 @see dhtbot.protocols
 
 """
+import pickle
+
 from twisted.application import service
 from twisted.web import xmlrpc
 
 from dhtbot.protocols.krpc_sender import IKRPC_Sender
 from dhtbot.protocols.krpc_responder import IKRPC_Responder
-from dhtbot.xml_rpc.client import unpickle_from_str, pickle_to_str
 
 class KRPC_Sender_Server(xmlrpc.XMLRPC):
     """
@@ -37,10 +38,10 @@ class KRPC_Sender_Server(xmlrpc.XMLRPC):
         # xml_rpc encodes tuples into lists, so we reverse the process
         address = tuple(address)
         # The query was pickled so it could be sent over XMLRPC
-        query = unpickle_from_str(pickled_query)
+        query = pickle.loads(pickled_query)
         deferred = self.node_proto.sendQuery(query, address, timeout)
         # Pickle the result so that it can be sent over XMLRPC
-        deferred.addCallback(pickle_to_str)
+        deferred.addCallback(pickle.dumps)
         return deferred
 
 class KRPC_Responder_Server(KRPC_Sender_Server):
@@ -64,7 +65,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.ping"""
         address = tuple(address)
         d = self.node_proto.ping(address, timeout)
-        d.addCallback(pickle_to_str)
+        d.addCallback(pickle.dumps)
         return d
 
     def xmlrpc_find_node(self, address, packed_node_id, timeout):
@@ -72,7 +73,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         address = tuple(address)
         node_id = long(packed_node_id)
         d = self.node_proto.find_node(address, node_id, timeout)
-        d.addCallback(pickle_to_str)
+        d.addCallback(pickle.dumps)
         return d
 
     def xmlrpc_get_peers(self, address, packed_target_id, timeout):
@@ -80,7 +81,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         address = tuple(address)
         target_id = long(packed_target_id)
         d = self.node_proto.get_peers(address, target_id, timeout)
-        d.addCallback(pickle_to_str)
+        d.addCallback(pickle.dumps)
         return d
 
     def xmlrpc_announce_peer(self,
@@ -89,7 +90,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         address = tuple(address)
         target_id = long(packed_target_id)
         d = self.node_proto.announce_peer(address, token, port, timeout)
-        d.addCallback(pickle_to_str)
+        d.addCallback(pickle.dumps)
         return d
 
 class KRPC_Iterator_Server(KRPC_Responder_Server):
@@ -117,7 +118,7 @@ class KRPC_Iterator_Server(KRPC_Responder_Server):
         target_id = long(packed_target_id)
         # if pickled_nodes is None, None will be returned
         # else the nodes will be unpickled
-        nodes = pickled_nodes and unpickle_from_str(pickled_nodes)
+        nodes = pickled_nodes and pickle.loads(pickled_nodes)
         d = self.node_proto.find_iterate(target_id, nodes, timeout)
-        d.addCallback(pickle_to_str)
+        d.addCallback(pickle.dumps)
         return d

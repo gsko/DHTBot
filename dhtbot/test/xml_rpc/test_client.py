@@ -10,7 +10,6 @@ from dhtbot import constants, xml_rpc
 from dhtbot.contact import Node
 from dhtbot.xml_rpc.client import (KRPC_Sender_Client,
         KRPC_Responder_Client, KRPC_Iterator_Client)
-from dhtbot.xml_rpc.pickle_utils import pickle_to_str
 from dhtbot.krpc_types import Query
 
 monkey_patcher = MonkeyPatcher()
@@ -52,33 +51,33 @@ class HollowXMLRPCServer(object):
     def ping(self, address, timeout=constants.rpctimeout):
         args = [address]
         self._none_check(args, timeout)
-        return pickle_to_str(args)
+        return pickle.dumps(args)
 
     def find_node(self, address, target_id, timeout=constants.rpctimeout):
         args = [address, target_id]
         self._none_check(args, timeout)
-        return pickle_to_str(args)
+        return pickle.dumps(args)
 
     def get_peers(self, address, target_id, timeout=constants.rpctimeout):
         args = [address, target_id]
         self._none_check(args, timeout)
-        return pickle_to_str(args)
+        return pickle.dumps(args)
 
     def announce_peer(self, address, target_id, token,
             port, timeout=constants.rpctimeout):
         args = [address, target_id, token, port]
         self._none_check(args, timeout)
-        return pickle_to_str(args)
+        return pickle.dumps(args)
 
     def find_iterate(self, target_id, nodes=None, timeout=None):
         args = [target_id]
         self._none_check(args, nodes, timeout)
-        return pickle_to_str(args)
+        return pickle.dumps(args)
 
     def get_iterate(self, target_id, nodes=None, timeout=None):
         args = [target_id]
         self._none_check(args, nodes, timeout)
-        return pickle_to_str(args)
+        return pickle.dumps(args)
 
     def _none_check(self, args, *args_to_check):
         """
@@ -237,5 +236,5 @@ class KRPC_Iterator_Client_TestCase(ClientTestBase, unittest.TestCase):
         # and convert pickle the nodes
         # since that is how they are sent
         expected_args[0] = str(expected_args[0])
-        expected_args[1] = pickle_to_str(self.test_nodes)
+        expected_args[1] = pickle.dumps(self.test_nodes)
         self.assertEquals(expected_args, actual_args)

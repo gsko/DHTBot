@@ -1,8 +1,9 @@
+import pickle
+
 from twisted.trial import unittest
 from twisted.internet import defer
 
 from dhtbot.krpc_types import Query
-from dhtbot.xml_rpc.pickle_utils import pickle_to_str, unpickle_from_str
 from dhtbot.xml_rpc.server_service import (KRPC_Sender_Server,
         KRPC_Responder_Server, KRPC_Iterator_Server)
 
@@ -80,6 +81,7 @@ class Hollow_KRPC_Iterator(object):
 
 class ServerTestCaseBase(object):
     test_address = ("127.0.0.2", 22)
+    test_target_id = 1234567890
 
     def setUp(self):
         self.node = Hollow_KRPC_Iterator()
@@ -100,7 +102,7 @@ class KRPC_Sender_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
         self.test_query = q
 
     def test_sendQuery_args(self):
-        self.kserver.xmlrpc_sendQuery(pickle_to_str(self.test_query),
+        self.kserver.xmlrpc_sendQuery(pickle.dumps(self.test_query),
                 list(self.test_address), 55)
         expected_args = (self.test_query, self.test_address, 55)
         self.assertEquals(expected_args, self.node.args)
@@ -115,9 +117,14 @@ class KRPC_Responder_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
         self.kserver = KRPC_Responder_Server(self.node)
 
     def test_ping_args(self):
-        pass
+        self.kserver.xmlrpc_ping(list(self.test_address), timeout=123)
+        expected_args = (self.test_address, 123)
+        self.assertEquals(expected_args, self.node.args)
+        self.assertEquals(self.node.called, self.node.ping)
 
     def test_find_node_args(self):
+        #self.kserver.xmlrpc_find_node(list(self.test_address),
+                #str(self.test_target_id))
         pass
 
     def test_get_peers_args(self):

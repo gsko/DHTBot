@@ -9,9 +9,9 @@ xmlrpclib implementation
 
 """
 import xmlrpclib
+import pickle
 
 from dhtbot import constants
-from dhtbot.xml_rpc.pickle_utils import pickle_to_str, unpickle_from_str
 
 class KRPC_Sender_Client(object):
     """
@@ -39,12 +39,12 @@ class KRPC_Sender_Client(object):
         @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
 
         """
-        pickled_query = pickle_to_str(query)
+        pickled_query = pickle.dumps(query)
         # Only query needs to be pickled
         # since XML RPC can handle the address (tuple)
         # and timeout (integer)
         pickled_result = self.server.sendQuery(pickled_query, address, timeout)
-        result = unpickle_from_str(pickled_result)
+        result = pickle.loads(pickled_result)
         # Result can be a Response, or one of several exceptions
         # @see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery
         # for more details on return values
@@ -59,25 +59,25 @@ class KRPC_Responder_Client(KRPC_Sender_Client):
     """
     def ping(self, address, timeout=None):
         pickled_result = self.server.ping(address, timeout)
-        return unpickle_from_str(pickled_result)
+        return pickle.loads(pickled_result)
 
     def find_node(self, address, node_id, timeout=None):
         packed_node_id = str(node_id)
         pickled_result = self.server.find_node(
                 address, packed_node_id, timeout)
-        return unpickle_from_str(pickled_result)
+        return pickle.loads(pickled_result)
 
     def get_peers(self, address, target_id, timeout=None):
         packed_target_id = str(target_id)
         pickled_result = self.server.get_peers(
                 address, packed_target_id, timeout)
-        return unpickle_from_str(pickled_result)
+        return pickle.loads(pickled_result)
 
     def announce_peer(self, address, target_id, token, port, timeout=None):
         packed_target_id = str(target_id)
         pickled_result = self.server.announce_peer(
                 address, packed_target_id,  token, port, timeout)
-        return unpickle_from_str(pickled_result)
+        return pickle.loads(pickled_result)
 
 class KRPC_Iterator_Client(KRPC_Responder_Client):
     """
@@ -98,6 +98,6 @@ class KRPC_Iterator_Client(KRPC_Responder_Client):
         packed_target_id = str(target_id)
         # if nodes is None, then None will be returned
         # else, the nodes will be encoded
-        packed_nodes = nodes and pickle_to_str(nodes)
+        packed_nodes = nodes and pickle.dumps(nodes)
         pickled_result = func(packed_target_id, packed_nodes, timeout)
-        return unpickle_from_str(pickled_result)
+        return pickle.loads(pickled_result)
