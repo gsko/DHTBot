@@ -84,12 +84,13 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         d.addCallback(pickle.dumps)
         return d
 
-    def xmlrpc_announce_peer(self,
-            address, packed_target_id, token, port, timeout):
+    def xmlrpc_announce_peer(self, address,
+            packed_target_id, token, port, timeout):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.announce_peer"""
         address = tuple(address)
         target_id = long(packed_target_id)
-        d = self.node_proto.announce_peer(address, token, port, timeout)
+        d = self.node_proto.announce_peer(address,
+            target_id, token, port, timeout)
         d.addCallback(pickle.dumps)
         return d
 

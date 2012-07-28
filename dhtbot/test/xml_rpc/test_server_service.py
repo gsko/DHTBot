@@ -26,7 +26,7 @@ class Hollow_KRPC_Iterator(object):
     """
     def __init__(self, *args):
         assert 0 <= len(args) <= 2
-        self.args = ()
+        self.args = None
         self.called = None
 
     ## KRPC_Sender
@@ -86,6 +86,10 @@ class ServerTestCaseBase(object):
     def setUp(self):
         self.node = Hollow_KRPC_Iterator()
 
+    def _check_node(self, expected_args, func):
+        self.assertEquals(func, self.node.called)
+        self.assertEquals(expected_args, self.node.args)
+
 class KRPC_Sender_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
     """
     This test case ensures that the KRPC_Sender_Server
@@ -103,14 +107,15 @@ class KRPC_Sender_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
 
     def test_sendQuery_args(self):
         self.kserver.xmlrpc_sendQuery(pickle.dumps(self.test_query),
-                list(self.test_address), 55)
+            list(self.test_address), 55)
         expected_args = (self.test_query, self.test_address, 55)
-        self.assertEquals(expected_args, self.node.args)
-        self.assertEquals(self.node.called, self.node.sendQuery)
-
+        self._check_node(expected_args, self.node.sendQuery)
 
 class KRPC_Responder_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
     """Same as KRPC_Sender_Server_TestCase, but for KRPC_Responder Server"""
+
+    test_token = 12344321
+    test_port = 2222
 
     def setUp(self):
         ServerTestCaseBase.setUp(self)
@@ -119,17 +124,27 @@ class KRPC_Responder_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
     def test_ping_args(self):
         self.kserver.xmlrpc_ping(list(self.test_address), timeout=123)
         expected_args = (self.test_address, 123)
-        self.assertEquals(expected_args, self.node.args)
-        self.assertEquals(self.node.called, self.node.ping)
+        self._check_node(expected_args, self.node.ping)
 
     def test_find_node_args(self):
-        #self.kserver.xmlrpc_find_node(list(self.test_address),
-                #str(self.test_target_id))
-        pass
+        self.kserver.xmlrpc_find_node(list(self.test_address),
+            str(self.test_target_id), 588)
+        expected_args = (self.test_address, self.test_target_id, 588)
+        self._check_node(expected_args, self.node.find_node)
 
     def test_get_peers_args(self):
-        pass
+        self.kserver.xmlrpc_get_peers(list(self.test_address), 
+            str(self.test_target_id), 999)
+        expected_args = (self.test_address, self.test_target_id, 999)
+        self._check_node(expected_args, self.node.get_peers)
 
     def test_announce_peer_args(self):
-        pass
+        self.kserver.xmlrpc_announce_peer(list(self.test_address), 
+            str(self.test_target_id),
+            self.test_token, self.test_port, timeout=10)
+        expected_args = (self.test_address, self.test_target_id,
+            self.test_token, self.test_port, 10)
+        self._check_node(expected_args, self.node.announce_peer)
 
+class KRPC_Iterator_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
+    pass
