@@ -3,7 +3,10 @@ DHTBot
 DHTBot is an MDHT client written entirely using the Twisted
 networking libraries.
 
-Work is in progress.
+Work in progress.
+
+> Disclaimer: this will launch one MDHT node and one XML RPC Server
+>   see dhtbot.node for more technical information
 
 ** Quick Start **
 
@@ -22,8 +25,20 @@ or
 
 4. Have fun :)
 
-5. See dhtbot.protocols (krpc_iterator and krpc_responder are the easiest)
-    for more methods that you can call on the node)
+(( Recommended documentation ))
+
+    * Methods that can be called on the node
+    dhtbot.protocols.krpc_iterator  (most interesting)
+    dhtbot.protocols.krpc_responder (more difficult, still interesting)
+    dhtbot.protocols.krpc_sender (annoying, interesting for certain
+        use cases)
+
+    * Node: an MDHT identity, returned in some methods
+    dhtbot.contact.Node
+
+    * KRPC: the KRPC protocol message used within the MDHT network
+    * returned from some methods
+    dhtbot.krpc_types
 
 
 contact: gsk067@gmail.com
