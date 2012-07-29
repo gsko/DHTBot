@@ -7,7 +7,7 @@ from dhtbot.node import xml_rpc_port
 k = KRPC_Iterator_Client("http://localhost:" + str(xml_rpc_port))
 
 # Feel free to use whatever addresses you want
-boostrap_address = ("67.18.187.143", 1337)
+bootstrap_address = ("67.18.187.143", 1337)
 
 # The most popular infohash on thepiratebay.se as of 28-07-2012
 american_pie = long("871DB705B11CA07BD86203F3B772F52EF53905C4", 16)
