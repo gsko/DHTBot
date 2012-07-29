@@ -9,6 +9,8 @@ networking libraries.
 
 (** Quick Start **)
 
+    0. Install the dhtbot package into your PYTHONPATH variable.
+        ie: export PYTHONPATH="$PYTHONPATH:/location/to/DHTBot"
     1. Run ''' twistd -noy DHTBot/dhtbot/node.py ''' in one terminal.
     2. Run ''' python DHTBot/bin/start_client ''' in another terminal.
     3. In the client terminal: you can issue commands as such
