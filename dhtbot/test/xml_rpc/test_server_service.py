@@ -4,9 +4,15 @@ from twisted.trial import unittest
 from twisted.internet import defer
 
 from dhtbot.krpc_types import Query
+from dhtbot.contact import Node
 from dhtbot.xml_rpc.server_service import (KRPC_Sender_Server,
         KRPC_Responder_Server, KRPC_Iterator_Server)
 
+def _remember_execution(klass):
+    for attrname in dir(klass):
+        attr = getattr(klass, attr)
+        is_method = callable(attr)
+        if is_method:
 
 class Hollow_KRPC_Iterator(object):
     """
@@ -82,6 +88,7 @@ class Hollow_KRPC_Iterator(object):
 class ServerTestCaseBase(object):
     test_address = ("127.0.0.2", 22)
     test_target_id = 1234567890
+    test_timeout = 588585
 
     def setUp(self):
         self.node = Hollow_KRPC_Iterator()
@@ -107,8 +114,8 @@ class KRPC_Sender_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
 
     def test_sendQuery_args(self):
         self.kserver.xmlrpc_sendQuery(pickle.dumps(self.test_query),
-            list(self.test_address), 55)
-        expected_args = (self.test_query, self.test_address, 55)
+            list(self.test_address), self.test_timeout)
+        expected_args = (self.test_query, self.test_address, self.test_timeout)
         self._check_node(expected_args, self.node.sendQuery)
 
 class KRPC_Responder_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
@@ -122,29 +129,51 @@ class KRPC_Responder_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
         self.kserver = KRPC_Responder_Server(self.node)
 
     def test_ping_args(self):
-        self.kserver.xmlrpc_ping(list(self.test_address), timeout=123)
-        expected_args = (self.test_address, 123)
+        self.kserver.xmlrpc_ping(list(self.test_address), self.test_timeout)
+        expected_args = (self.test_address, self.test_timeout)
         self._check_node(expected_args, self.node.ping)
 
     def test_find_node_args(self):
         self.kserver.xmlrpc_find_node(list(self.test_address),
-            str(self.test_target_id), 588)
-        expected_args = (self.test_address, self.test_target_id, 588)
+            str(self.test_target_id), self.test_timeout)
+        expected_args = (self.test_address, self.test_target_id,
+             self.test_timeout)
         self._check_node(expected_args, self.node.find_node)
 
     def test_get_peers_args(self):
         self.kserver.xmlrpc_get_peers(list(self.test_address), 
-            str(self.test_target_id), 999)
-        expected_args = (self.test_address, self.test_target_id, 999)
+            str(self.test_target_id), self.test_timeout)
+        expected_args = (self.test_address, self.test_target_id, 
+            self.test_timeout)
         self._check_node(expected_args, self.node.get_peers)
 
     def test_announce_peer_args(self):
         self.kserver.xmlrpc_announce_peer(list(self.test_address), 
             str(self.test_target_id),
-            self.test_token, self.test_port, timeout=10)
+            self.test_token, self.test_port, self.test_timeout)
         expected_args = (self.test_address, self.test_target_id,
-            self.test_token, self.test_port, 10)
+            self.test_token, self.test_port, self.test_timeout)
         self._check_node(expected_args, self.node.announce_peer)
 
 class KRPC_Iterator_Server_TestCase(unittest.TestCase, ServerTestCaseBase):
-    pass
+
+    test_nodes = [Node(num, ("127.0.0.%d" % num, num)) for num in xrange(2, 22)]
+
+    def setUp(self):
+        ServerTestCaseBase.setUp(self)
+        self.kserver = KRPC_Iterator_Server(self.node)
+
+    def test_find_iterate_args(self):
+        self._test_iterate_args(self.kserver.xmlrpc_find_iterate,
+            self.node.find_iterate)
+
+    def test_get_iterate_args(self):
+        self._test_iterate_args(self.kserver.xmlrpc_get_iterate,
+            self.node.get_iterate)
+
+    def _test_iterate_args(self, xml_func, node_func):
+        xml_func(str(self.test_target_id),
+            pickle.dumps(self.test_nodes), self.test_timeout)
+        expected_args = (self.test_target_id,
+            self.test_nodes, self.test_timeout)
+        self._check_node(expected_args, node_func)
