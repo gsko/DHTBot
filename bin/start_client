@@ -1,7 +1,15 @@
 #!/usr/bin/python
 
-from dhtbot.xml_rpc.client import KRPC_Iterator_Client
+import random
+import math
+
+from dhtbot import constants
 from dhtbot.node import xml_rpc_port
+from dhtbot.xml_rpc.client import KRPC_Iterator_Client
+
+
+def rand_id():
+    return random.getrandbits(constants.id_size)
 
 # Launch the client
 k = KRPC_Iterator_Client("http://localhost:" + str(xml_rpc_port))
