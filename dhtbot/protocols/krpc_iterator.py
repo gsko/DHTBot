@@ -8,6 +8,7 @@ from zope.interface import implements
 from twisted.internet import defer
 
 from dhtbot.protocols.krpc_responder import KRPC_Responder, IKRPC_Responder
+from dhtbot.protocols.errors import TimeoutError, KRPCError
 
 class IterationError(Exception):
     """
