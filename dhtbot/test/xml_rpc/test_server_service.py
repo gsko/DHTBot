@@ -8,12 +8,6 @@ from dhtbot.contact import Node
 from dhtbot.xml_rpc.server_service import (KRPC_Sender_Server,
         KRPC_Responder_Server, KRPC_Iterator_Server)
 
-def _remember_execution(klass):
-    for attrname in dir(klass):
-        attr = getattr(klass, attr)
-        is_method = callable(attr)
-        if is_method:
-
 class Hollow_KRPC_Iterator(object):
     """
     Simple class that implements all KRPC_Iterator methods

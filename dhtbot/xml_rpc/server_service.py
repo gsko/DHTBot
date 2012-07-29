@@ -120,6 +120,6 @@ class KRPC_Iterator_Server(KRPC_Responder_Server):
         # if pickled_nodes is None, None will be returned
         # else the nodes will be unpickled
         nodes = pickled_nodes and pickle.loads(pickled_nodes)
-        d = self.node_proto.find_iterate(target_id, nodes, timeout)
+        d = func(target_id, nodes, timeout)
         d.addCallback(pickle.dumps)
         return d
