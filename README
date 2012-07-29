@@ -3,12 +3,11 @@ DHTBot
 DHTBot is an MDHT client written entirely using the Twisted
 networking libraries.
 
-Work in progress.
 
 > Disclaimer: this will launch one MDHT node and one XML RPC Server
 >   see dhtbot.node for more technical information
 
-** Quick Start **
+(** Quick Start **)
 
 1. Run ''' twistd -noy DHTBot/dhtbot/node.py ''' in one terminal.
 2. Run ''' python DHTBot/bin/start_client ''' in another terminal.
@@ -16,8 +15,9 @@ Work in progress.
 
     # Legend:
     #   k: an instance of dhtbot.xml_rpc.client.KRPC_Iterator_Client
+    #   bootstrap_address: an address that can be used to send queries to
 
->>> response = k.ping(some_address)
+>>> response = k.ping(bootstrap_address)
 
 or
 
