@@ -41,7 +41,7 @@ class KRPC_Sender_Server(xmlrpc.XMLRPC):
         query = pickle.loads(pickled_query)
         deferred = self.node_proto.sendQuery(query, address, timeout)
         # Pickle the result so that it can be sent over XMLRPC
-        deferred.addCallback(pickle.dumps)
+        deferred.addBoth(pickle.dumps)
         return deferred
 
 class KRPC_Responder_Server(KRPC_Sender_Server):
@@ -65,7 +65,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.ping"""
         address = tuple(address)
         d = self.node_proto.ping(address, timeout)
-        d.addCallback(pickle.dumps)
+        d.addBoth(pickle.dumps)
         return d
 
     def xmlrpc_find_node(self, address, packed_node_id, timeout):
@@ -73,7 +73,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         address = tuple(address)
         node_id = long(packed_node_id)
         d = self.node_proto.find_node(address, node_id, timeout)
-        d.addCallback(pickle.dumps)
+        d.addBoth(pickle.dumps)
         return d
 
     def xmlrpc_get_peers(self, address, packed_target_id, timeout):
@@ -81,7 +81,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         address = tuple(address)
         target_id = long(packed_target_id)
         d = self.node_proto.get_peers(address, target_id, timeout)
-        d.addCallback(pickle.dumps)
+        d.addBoth(pickle.dumps)
         return d
 
     def xmlrpc_announce_peer(self, address,
@@ -91,7 +91,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         target_id = long(packed_target_id)
         d = self.node_proto.announce_peer(address,
             target_id, token, port, timeout)
-        d.addCallback(pickle.dumps)
+        d.addBoth(pickle.dumps)
         return d
 
 class KRPC_Iterator_Server(KRPC_Responder_Server):
@@ -121,5 +121,5 @@ class KRPC_Iterator_Server(KRPC_Responder_Server):
         # else the nodes will be unpickled
         nodes = pickled_nodes and pickle.loads(pickled_nodes)
         d = func(target_id, nodes, timeout)
-        d.addCallback(pickle.dumps)
+        d.addBoth(pickle.dumps)
         return d
