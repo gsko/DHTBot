@@ -7,8 +7,8 @@ import random
 from twisted.application import internet, service
 from twisted.web import server
 
-from dhtbot.protocols.krpc_responder import KRPC_Responder
-from dhtbot.xml_rpc.server_service import KRPC_Responder_Server
+from dhtbot.protocols.krpc_iterator import KRPC_Iterator
+from dhtbot.xml_rpc.server_service import KRPC_Iterator_Server
 
 # The udp port on which the DHT node will run
 dht_port = 1800
@@ -25,10 +25,10 @@ node_id = random.getrandbits(160)
 application = service.Application("DHT Daemon")
 
 # The protocol that will drive the heart of this application
-node_proto = KRPC_Responder(node_id=node_id)
+node_proto = KRPC_Iterator(node_id=node_id)
 
 # Set up the XML RPC wrapper
-xml_rpc = KRPC_Responder_Server(node_proto)
+xml_rpc = KRPC_Iterator_Server(node_proto)
 node_xml_rpc = service.MultiService()
 xml_rpc_tcp = internet.TCPServer(xml_rpc_port, server.Site(xml_rpc))
 xml_rpc_tcp.setServiceParent(node_xml_rpc)
