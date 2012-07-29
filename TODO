@@ -2,15 +2,20 @@
     stores every transaction along with the address. (ie instead of looking
     up transactions just with the transaction_id, have it look up with
     both the transaction_id and the incoming/outgoing address).
-* Quarantiner in krpc_sender
-* Nice in krpc_responder
-* Have the Quarantiner bind into sendQuery so that it doesn't necessarily
-    need to send its own querying pings. This way, the quarantiner
-    can observe whether the jailed node responds to ANY outbound query
-    giving it a higher chance of success
 * Extend krpc_coder so that it includes optional attributes that are
     not part of the BEP specification (ie: include a krpc.optional_fields
     dictionary that contains additions for uTorrent adds)
 * All TODO tags in all the source files
 * Refactor pieces of code that manually compare queries/responses to use
     the new __eq__ and __ne__ functions
+* Make better __repr__'s for nodes and addreses
+
+
+*** Plugins
+* Sybil detection
+* Quarantiner in krpc_sender
+* Have the Quarantiner bind into sendQuery so that it doesn't necessarily
+    need to send its own querying pings. This way, the quarantiner
+    can observe whether the jailed node responds to ANY outbound query
+    giving it a higher chance of success
+* Nice in krpc_responder

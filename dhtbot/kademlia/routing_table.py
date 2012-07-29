@@ -83,7 +83,7 @@ class TreeRoutingTable(object):
         k = kbucket.KBucket(0, 2**constants.id_size)
         self.root = _TreeNode(k)
         self.nodes_dict = {}
-        self.nodes_by_addr = defaultdict(set)
+        self.nodes_by_addr = defaultdict()
         self.active_kbuckets = [k]
 
     def offer_node(self, node):
