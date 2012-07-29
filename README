@@ -1,30 +1,29 @@
 DHTBot
 ======
+DHTBot is an MDHT client written entirely using the Twisted
+networking libraries.
 
-DHTBot is a collection of utilities and protocols that help communicate
-with nodes found in the BitTorrent DHT network.
+Work is in progress.
 
-DHTBot is written entirely in Python using the asynchronous networking
-framework Twisted. The Bencode algorithm implementation is taken from the last
-open source version of the BitTorrent client.
+** Quick Start **
 
-DHTBot can act as a standalone BEP5 BitTorrent DHT client. Development for
-DHTBot is still in the beta stage with missing features. The goal of this
-project is to provide a simple interface for a user to query/poll the DHT
-network and examine the results.
+1. Run ''' twistd -noy DHTBot/dhtbot/node.py ''' in one terminal.
+2. Run ''' python DHTBot/bin/start_client ''' in another terminal.
+3. In the client terminal: you can issue commands as such
 
-* The dhtbot folder contains all the source files. Most of the modules found
-    in this folder should contain docstrings describing their usage. The
-    core functionality of DHTBot is currently found in the two protocols found
-    in dhtbot/protocols/krpc_sender.py and dhtbot/protocols/krpc_responder.py
-* The license folder contains the bittorrent license (for the bencode.py).
-    And will be used to hold licenses for various libraries used in this
-    project.
-* The examples folder contains a few short examples of how to use the
-    twisted protocols. See the twisted documentation
-    (http://www.twistedmatrix.com) for more help on twisted.
-* The references folder contains a few pdf's and html files of DHT
-    research and specifications that were used in the development of DHTBot
+    # Legend:
+    #   k: an instance of dhtbot.xml_rpc.client.KRPC_Iterator_Client
 
-Patches and suggestions are welcome!
-Send your contributions to gsk067@gmail.com
+>>> response = k.ping(some_address)
+
+or
+
+>>> nodes = k.find_iterate(some_target_id, nodes)
+
+4. Have fun :)
+
+5. See dhtbot.protocols (krpc_iterator and krpc_responder are the easiest)
+    for more methods that you can call on the node)
+
+
+contact: gsk067@gmail.com

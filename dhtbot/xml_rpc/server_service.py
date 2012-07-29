@@ -108,11 +108,11 @@ class KRPC_Iterator_Server(KRPC_Responder_Server):
 
     """
     def xmlrpc_find_iterate(self, packed_target_id, pickled_nodes, timeout):
-        self._iterate_funcs(self.node_proto.find_iterate,
+        return self._iterate_funcs(self.node_proto.find_iterate,
                 packed_target_id, pickled_nodes, timeout)
 
     def xmlrpc_get_iterate(self, packed_target_id, pickled_nodes, timeout):
-        self._iterate_funcs(self.node_proto.get_iterate,
+        return self._iterate_funcs(self.node_proto.get_iterate,
                 packed_target_id, pickled_nodes, timeout)
 
     def _iterate_funcs(self, func, packed_target_id, pickled_nodes, timeout):

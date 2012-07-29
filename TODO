@@ -11,11 +11,6 @@
 * Extend krpc_coder so that it includes optional attributes that are
     not part of the BEP specification (ie: include a krpc.optional_fields
     dictionary that contains additions for uTorrent adds)
-* Testing of the xml_rpc server
-* (See krpc_responder)
 * All TODO tags in all the source files
 * Refactor pieces of code that manually compare queries/responses to use
     the new __eq__ and __ne__ functions
-* Change xml_rpc client and xml_rpc server to pickle their args
-    before transferring them. Change corresponding test cases (and finish
-    the xml_rpc server test case)

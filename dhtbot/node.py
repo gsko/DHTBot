@@ -18,8 +18,8 @@ xml_rpc_port = 8888
 # Start with a random node_id on each run
 # Note: for better consistency, it is better to choose
 # a fixed random ID
-node_id = random.getrandbits(160)
-#node_id = 317981748868523100801836251505537304032928861248L
+#node_id = random.getrandbits(160)
+node_id = 317981748868523100801836251505537304032928861248L
 
 # Set up the root application
 application = service.Application("DHT Daemon")
