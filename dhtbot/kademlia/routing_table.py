@@ -53,8 +53,10 @@ class IRoutingTable(Interface):
         """
         Returns the node operating behind the given address (ip/port)
 
-        @returns contact.Node if there is a node operating on the given
-                 address, otherwise None
+        @returns a set of contact.Node's that are operating on and
+            sharing the given address if there are any. If there
+            are no recorded nodes operating on this address,
+            None is returned
 
         """
 
@@ -83,7 +85,7 @@ class TreeRoutingTable(object):
         k = kbucket.KBucket(0, 2**constants.id_size)
         self.root = _TreeNode(k)
         self.nodes_dict = {}
-        self.nodes_by_addr = defaultdict()
+        self.nodes_by_addr = defaultdict(set)
         self.active_kbuckets = [k]
 
     def offer_node(self, node):
@@ -128,7 +130,9 @@ class TreeRoutingTable(object):
     def get_node_by_address(self, address):
         """@see RoutingTable.get_node_by_address"""
         if address in self.nodes_by_addr:
-            return self.nodes_by_addr[address]
+            nodes_set = self.nodes_by_addr[address]
+            if len(nodes_set) > 0:
+                return nodes_set
 
     def get_closest_nodes(self, node_id, num_nodes=constants.k):
         """@see RoutingTable.get_closest_nodes"""

@@ -304,8 +304,12 @@ class KRPC_Sender(protocol.DatagramProtocol):
         # Only enter this code block if the error
         # is either a TimeoutError or a KRPCError
         f = failure.trap(TimeoutError, KRPCError)
-        errornode = self.routing_table.get_node_by_address(address)
-        if errornode is not None:
+        errornodes = self.routing_table.get_node_by_address(address)
+        if errornodes is not None and len(errornodes) > 1:
+            # TODO currently popping any node,
+            # should we specify a behavior when dealing with sybil nodes?
+            errornode = errornodes.pop()
+            errornodes.add(errornode)
             if f == TimeoutError:
                 # TODO introduce a better determination
                 # for whether to remove a node (besides .fresh())
