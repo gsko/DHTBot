@@ -93,19 +93,15 @@ class QueryCodingTestCase(unittest.TestCase):
         q = self.q
         q.rpctype = "ping"
         processed_query = encode_and_decode(q)
-        self.assertEquals(processed_query._transaction_id, q._transaction_id)
-        self.assertEquals(processed_query._from, q._from)
-        self.assertEquals(processed_query.rpctype, q.rpctype)
+        self.assertEquals(processed_query, q)
 
     def test_encode_and_decode_validFindNode(self):
         q = self.q
         q.rpctype = "find_node"
         q.target_id = 2**15
         processed_query = encode_and_decode(q)
-        self.assertEquals(processed_query._transaction_id, q._transaction_id)
-        self.assertEquals(processed_query._from, q._from)
-        self.assertEquals(processed_query.rpctype, q.rpctype)
-        self.assertEquals(processed_query.target_id, q.target_id)
+        self.assertEquals(processed_query, q)
+
 
     def test_encode_and_decode_invalidRPCType(self):
         q = self.q
