@@ -114,7 +114,9 @@ def _query_decoder(rpc_dict):
         q.target_id = basic_coder.decode_network_id(rpc_dict['a']['info_hash'])
     elif rpctype == 'announce_peer':
         q.target_id = basic_coder.decode_network_id(rpc_dict['a']['info_hash'])
-        q.port = basic_coder.decode_port(rpc_dict['a']['port'])
+        # Try encoding the port (to ensure it is within range)
+        basic_coder.encode_port(rpc_dict['a']['port'])
+        q.port = rpc_dict['a']['port']
         q.token = basic_coder.btol(rpc_dict['a']['token'])
     else:
         raise _ProtocolFormatError()
@@ -225,7 +227,9 @@ def _query_encoder(query):
                 basic_coder.encode_network_id(query.target_id))
     elif query.rpctype == 'announce_peer':
         query_dict['a']['token'] = basic_coder.ltob(query.token)
-        query_dict['a']['port'] = basic_coder.encode_port(query.port)
+        # Try encoding the port, to see if it is within range
+        basic_coder.encode_port(query.port)
+        query_dict['a']['port'] = query.port
         query_dict['a']['info_hash'] = (
                 basic_coder.encode_network_id(query.target_id))
     else:

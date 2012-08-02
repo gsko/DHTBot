@@ -3,6 +3,7 @@ from twisted.trial import unittest
 from dhtbot.coding.krpc_coder import (
         encode, decode, _chunkify, _decode_addresses,
         InvalidKRPCError)
+from dhtbot.coding import basic_coder
 from dhtbot.krpc_types import Query, Response, Error
 from dhtbot.contact import Node
 
@@ -33,47 +34,63 @@ class KRPCHelperFunctionTestCase(unittest.TestCase):
         self.assertEquals(("255.255.255.255", 65535), addresses[1])
 
 class QueryCodingTestCase(unittest.TestCase):
-    def test_encode_validPing(self):
-        q = Query()
+
+    test_target_id = 551232
+    test_port = 511
+    test_token = 5555
+
+    def setUp(self):
+        q = self.q = Query()
         q._transaction_id = 15
         q._from = 2**120
+
+    def test_encode_validPing(self):
+        q = self.q
         q.rpctype = "ping"
         encoding = encode(q)
-        expected_encoding = ('d1:ad2:id20:\x00\x00\x00\x00\x01\x00' +
-                '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-                '\x00\x00e1:q4:ping1:t1:\x0f1:y1:qe')
+        expected_encoding = ('d1:ad2:id20:\x00\x00\x00\x00\x01\x00\x00' +
+            '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00e1:q4:' +
+            'ping1:t1:\x0f1:y1:qe')
         self.assertEquals(expected_encoding, encoding)
 
     def test_encode_validFindNode(self):
-        q = Query()
-        q._transaction_id = 150
-        q._from = 2**120 + 2**75 + 12098093186316 + 6809318631098608136
-        q.target_id = 29808160398616
+        q = self.q
+        q.target_id = self.test_target_id
         q.rpctype = "find_node"
         encoding = encode(q)
-        expected_encoding = ('d1:ad2:id20:\x00\x00\x00\x00\x01\x00\x00' +
-                '\x00\x00\x00\x08\x00^\x7f\x9a8\x87\xa0\xe7\x146:target' +
-                '20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-                '\x00\x00\x1b\x1c@\xcf\xdd\x18e1:q9:find_node1:t1:\x961:y1:qe')
+        expected_encoding = ('d1:ad2:id20:\x00\x00\x00\x00\x01\x00\x00\x00' +
+            '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x006:target20:' +
+            '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' + 
+            '\x00\x00\x08i@e1:q9:find_node1:t1:\x0f1:y1:qe')
         self.assertEquals(expected_encoding, encoding)
 
     def test_encode_validGetPeers(self):
-        q = Query()
-        q._transaction_id = 150
-        q._from = 2**135 + 2**63 + 8901361731230918250983106831094372
-        q.target_id = 176098698213
+        q = self.q
+        q.target_id = self.test_target_id
         q.rpctype = "get_peers"
         encoding = encode(q)
-        expected_encoding = ('d1:ad2:id20:\x00\x00\x00\x80\x00\x01\xb6' +
-                '\xde\xfa\xf9eK\x1e\x99%\xff\xb6\xa2\x92d9:info_hash' +
-                '20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-                '\x00\x00\x00)\x00L\xe3\xe5e1:q9:get_peers1:t1:\x961:y1:qe')
+        expected_encoding = ('d1:ad2:id20:\x00\x00\x00\x00\x01\x00\x00\x00' +
+            '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x009:info_hash' +
+            '20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            '\x00\x00\x00\x08i@e1:q9:get_peers1:t1:\x0f1:y1:qe')
+        self.assertEquals(expected_encoding, encoding)
+
+    def test_encode_validAnnouncePeer(self):
+        q = self.q
+        q.rpctype = "announce_peer"
+        q.target_id = self.test_target_id
+        q.port = self.test_port
+        q.token = self.test_token
+        encoding = encode(q)
+        expected_encoding = ('d1:ad2:id20:\x00\x00\x00\x00\x01\x00\x00' +
+            '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x009:info_hash' +
+            '20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            '\x00\x00\x00\x08i@4:porti511e5:token2:\x15\xb3e1:q13:'+
+            'announce_peer1:t1:\x0f1:y1:qe')
         self.assertEquals(expected_encoding, encoding)
 
     def test_encode_and_decode_validPing(self):
-        q = Query()
-        q._transaction_id = 15
-        q._from = 2**120
+        q = self.q
         q.rpctype = "ping"
         processed_query = encode_and_decode(q)
         self.assertEquals(processed_query._transaction_id, q._transaction_id)
@@ -81,9 +98,7 @@ class QueryCodingTestCase(unittest.TestCase):
         self.assertEquals(processed_query.rpctype, q.rpctype)
 
     def test_encode_and_decode_validFindNode(self):
-        q = Query()
-        q._transaction_id = 280
-        q._from = 2**120
+        q = self.q
         q.rpctype = "find_node"
         q.target_id = 2**15
         processed_query = encode_and_decode(q)
@@ -93,29 +108,25 @@ class QueryCodingTestCase(unittest.TestCase):
         self.assertEquals(processed_query.target_id, q.target_id)
 
     def test_encode_and_decode_invalidRPCType(self):
-        q = Query()
-        q._transaction_id = 2**160 + 1
+        q = self.q
+        q._transaction_id = 2**159
         q._from = 2**120
         q.rpctype = "find_candy"
         q.target_id = 15
         self.assertRaises(InvalidKRPCError, encode_and_decode, q)
 
     def test_encode_and_decode_invalidTargetID(self):
-        q = Query()
-        q._transaction_id = 15
-        q._from = 2**120
+        q = self.q
         q.rpctype = "find_node"
-        q.target_id = 2**160 + 1
+        q.target_id = 2**160
         self.assertRaises(InvalidKRPCError, encode_and_decode, q)
 
     def test_encode_and_decode_invalidPort(self):
-        q = Query()
-        q._transaction_id = 15
-        q._from = 2**120
+        q = self.q
         q.rpctype = "announce_peer"
-        q.target_id = 2**130
+        q.target_id = self.test_target_id
         q.port = 70000
-        q.token = 156
+        q.token = self.test_token
         self.assertRaises(InvalidKRPCError, encode_and_decode, q)
 
 class ResponseCodingTestCase(unittest.TestCase):
