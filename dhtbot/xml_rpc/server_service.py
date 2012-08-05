@@ -44,6 +44,9 @@ class KRPC_Sender_Server(xmlrpc.XMLRPC):
         deferred.addBoth(pickle.dumps)
         return deferred
 
+    def _result_serializer(self, result):
+        return pickle.dumps(result)
+
 class KRPC_Responder_Server(KRPC_Sender_Server):
     """
     Proxy between the XML RPC Server and the running KRPC_Responder Protocol
@@ -65,7 +68,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.ping"""
         address = tuple(address)
         d = self.node_proto.ping(address, timeout)
-        d.addBoth(pickle.dumps)
+        d.addBoth(self._result_serializer)
         return d
 
     def xmlrpc_find_node(self, address, packed_node_id, timeout):
@@ -73,7 +76,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         address = tuple(address)
         node_id = long(packed_node_id)
         d = self.node_proto.find_node(address, node_id, timeout)
-        d.addBoth(pickle.dumps)
+        d.addBoth(self._result_serializer)
         return d
 
     def xmlrpc_get_peers(self, address, packed_target_id, timeout):
@@ -81,7 +84,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         address = tuple(address)
         target_id = long(packed_target_id)
         d = self.node_proto.get_peers(address, target_id, timeout)
-        d.addBoth(pickle.dumps)
+        d.addBoth(self._result_serializer)
         return d
 
     def xmlrpc_announce_peer(self, address,
@@ -91,7 +94,7 @@ class KRPC_Responder_Server(KRPC_Sender_Server):
         target_id = long(packed_target_id)
         d = self.node_proto.announce_peer(address,
             target_id, token, port, timeout)
-        d.addBoth(pickle.dumps)
+        d.addBoth(self._result_serializer)
         return d
 
 class KRPC_Iterator_Server(KRPC_Responder_Server):
@@ -121,5 +124,5 @@ class KRPC_Iterator_Server(KRPC_Responder_Server):
         # else the nodes will be unpickled
         nodes = pickled_nodes and pickle.loads(pickled_nodes)
         d = func(target_id, nodes, timeout)
-        d.addBoth(pickle.dumps)
+        d.addBoth(self._result_serializer)
         return d
