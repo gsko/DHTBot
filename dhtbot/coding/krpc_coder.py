@@ -137,10 +137,10 @@ def _response_decoder(rpc_dict):
     # get_peers sometimes returns a list of nodes
     if 'nodes' in rpc_dict['r']:
         r.nodes = _decode_nodes(rpc_dict['r']['nodes'])
-    # get_peers returns a list of peers
+    # get_peers always returns a list of peers
     if 'values' in rpc_dict['r']:
         r.peers = _decode_addresses(rpc_dict['r']['values'])
-            # get_peers returns a token
+    # get_peers returns a token
     if 'token' in rpc_dict['r']:
         r.token = basic_coder.btol(rpc_dict['r']['token'])
     return r
