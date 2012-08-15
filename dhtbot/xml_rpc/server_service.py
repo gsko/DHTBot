@@ -9,7 +9,7 @@ from twisted.web import xmlrpc
 
 from dhtbot.xml_rpc.common import inflate, deflate
 
-class KRPC_Responder_Server(object):
+class KRPC_Responder_Server(xmlrpc.XMLRPC):
     """
     Proxy between the XML RPC Server and the running KRPC_Responder Protocol
 
