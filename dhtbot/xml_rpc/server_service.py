@@ -4,10 +4,10 @@ An XML RPC wrapper around the DHT protocols
 @see dhtbot.protocols
 
 """
-import pickle
-
 from twisted.application import service
 from twisted.web import xmlrpc
+
+from dhtbot.xml_rpc.common import inflate, deflate
 
 class KRPC_Responder_Server(object):
     """
@@ -19,9 +19,10 @@ class KRPC_Responder_Server(object):
         get_peers
         announce_peer
     
-    These methods send back a pickled result
+    These methods send back a deflated result
 
     @see dhtbot.protocols.krpc_responder.KRPC_Responder
+    @see dhtbot.xml_rpc.common
 
     """
     def __init__(self, node_proto):
@@ -53,16 +54,11 @@ class KRPC_Responder_Server(object):
 
     def _inflate_call_deflate(self, func, args):
         """Inflate the arguments, call the function, deflate its result"""
-        inflated_args = (self._inflate(arg) for arg in args)
+        inflated_args = (inflate(arg) for arg in args)
         d = func(*inflated_args)
-        d.addBoth(self._deflate)
+        d.addBoth(deflate)
         return d
 
-    def _deflate(self, data):
-        return pickle.dumps(data)
-
-    def _inflate(self, data):
-        return pickle.loads(data)
 
 class KRPC_Iterator_Server(KRPC_Responder_Server):
     """
@@ -73,9 +69,10 @@ class KRPC_Iterator_Server(KRPC_Responder_Server):
         find_iterate
         get_iterate
 
-    These methods send back a pickled result
+    These methods send back a deflated result
 
     @see dhtbot.protocols.krpc_iterator.KRPC_Iterator
+    @see dhtbot.xml_rpc.common
 
     """
     def xmlrpc_find_iterate(self, target_id, nodes, timeout):

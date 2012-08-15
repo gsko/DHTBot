@@ -9,9 +9,9 @@ xmlrpclib implementation
 
 """
 import xmlrpclib
-import pickle
 
 from dhtbot import constants
+from dhtbot.xml_rpc.common import inflate, deflate
 
 class KRPC_Responder_Client(object):
     """
@@ -27,26 +27,26 @@ class KRPC_Responder_Client(object):
         """
         self.server = xmlrpclib.ServerProxy(url, allow_none=True)
 
-    def _pickle_and_feed(self, args, func):
-        pickled_args = (pickle.dumps(arg) for arg in args)
-        pickled_result = func(*pickled_args)
-        return pickle.loads(pickled_result)
+    def _deflate_and_feed(self, args, func):
+        deflated_args = (deflate(arg) for arg in args)
+        deflated_result = func(*deflated_args)
+        return inflate(deflated_result)
 
     def ping(self, address, timeout=None):
         args = (address, timeout)
-        return self._pickle_and_feed(args, self.server.ping)
+        return self._deflate_and_feed(args, self.server.ping)
 
     def find_node(self, address, node_id, timeout=None):
         args = (address, node_id, timeout)
-        return self._pickle_and_feed(args, self.server.find_node)
+        return self._deflate_and_feed(args, self.server.find_node)
 
     def get_peers(self, address, target_id, timeout=None):
         args = (address, target_id, timeout)
-        return self._pickle_and_feed(args, self.server.get_peers)
+        return self._deflate_and_feed(args, self.server.get_peers)
 
     def announce_peer(self, address, target_id, token, port, timeout=None):
         args = (address, target_id, token, port, timeout)
-        return self._pickle_and_feed(args, self.server.announce_peer)
+        return self._deflate_and_feed(args, self.server.announce_peer)
 
 class KRPC_Iterator_Client(KRPC_Responder_Client):
     """
@@ -57,8 +57,8 @@ class KRPC_Iterator_Client(KRPC_Responder_Client):
     """
     def find_iterate(self, target_id, nodes=None, timeout=None):
         args = (target_id, nodes, timeout)
-        return self._pickle_and_feed(args, self.server.find_iterate)
+        return self._deflate_and_feed(args, self.server.find_iterate)
 
     def get_iterate(self, target_id, nodes=None, timeout=None):
         args = (target_id, nodes, timeout)
-        return self._pickle_and_feed(args, self.server.get_iterate)
+        return self._deflate_and_feed(args, self.server.get_iterate)
