@@ -6,8 +6,6 @@
     not part of the BEP specification (ie: include a krpc.optional_fields
     dictionary that contains additions for uTorrent adds)
 * All TODO tags in all the source files
-* Refactor pieces of code that manually compare queries/responses to use
-    the new __eq__ and __ne__ functions
 * Make better __repr__'s for nodes and addreses
 
 
