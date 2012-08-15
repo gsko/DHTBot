@@ -9,120 +9,83 @@ import pickle
 from twisted.application import service
 from twisted.web import xmlrpc
 
-from dhtbot.protocols.krpc_sender import IKRPC_Sender
-from dhtbot.protocols.krpc_responder import IKRPC_Responder
-
-class KRPC_Sender_Server(xmlrpc.XMLRPC):
-    """
-    Proxy between the XML RPC Server and the running KRPC_Sender Protocol
-
-    sendQuery is the only proxied function from KRPC_Sender
-
-    @see dhtbot.protocols.krpc_sender.KRPC_Sender
-
-    """
-
-    # Allow this XMLRPC server to transmit None
-    allowNone = True
-    # useDateTime was enabled because otherwise
-    # exceptions were triggered in the XML RPC connection
-    # process. (This may be able to be removed)
-    # TODO investigate
-    useDateTime = True
-
-    def __init__(self, node_proto):
-        self.node_proto = node_proto
-
-    def xmlrpc_sendQuery(self, pickled_query, address, timeout):
-        """@see dhtbot.protocols.krpc_sender.KRPC_Sender.sendQuery"""
-        # xml_rpc encodes tuples into lists, so we reverse the process
-        address = tuple(address)
-        # The query was pickled so it could be sent over XMLRPC
-        query = pickle.loads(pickled_query)
-        deferred = self.node_proto.sendQuery(query, address, timeout)
-        # Pickle the result so that it can be sent over XMLRPC
-        deferred.addBoth(pickle.dumps)
-        return deferred
-
-    def _result_serializer(self, result):
-        return pickle.dumps(result)
-
-class KRPC_Responder_Server(KRPC_Sender_Server):
+class KRPC_Responder_Server(object):
     """
     Proxy between the XML RPC Server and the running KRPC_Responder Protocol
 
     The following methods are available:
-        sendQuery
         ping
         find_node
         get_peers
         announce_peer
     
-    These methods send back a deferred that returns
-    a pickled version of the result
+    These methods send back a pickled result
 
     @see dhtbot.protocols.krpc_responder.KRPC_Responder
 
     """
+    def __init__(self, node_proto):
+        self.node_proto = node_proto
+
     def xmlrpc_ping(self, address, timeout):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.ping"""
-        address = tuple(address)
-        d = self.node_proto.ping(address, timeout)
-        d.addBoth(self._result_serializer)
-        return d
+        packed_args = (address, timeout)
+        return self._inflate_call_deflate(
+                self.node_proto.ping, packed_args)
 
-    def xmlrpc_find_node(self, address, packed_node_id, timeout):
+    def xmlrpc_find_node(self, address, node_id, timeout):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.find_node"""
-        address = tuple(address)
-        node_id = long(packed_node_id)
-        d = self.node_proto.find_node(address, node_id, timeout)
-        d.addBoth(self._result_serializer)
-        return d
+        packed_args = (address, node_id, timeout)
+        return self._inflate_call_deflate(
+                self.node_proto.find_node, packed_args)
 
-    def xmlrpc_get_peers(self, address, packed_target_id, timeout):
+    def xmlrpc_get_peers(self, address, target_id, timeout):
         """@see dhtbot.protocols.krpc_responder.KRPC_Responder.get_peers"""
-        address = tuple(address)
-        target_id = long(packed_target_id)
-        d = self.node_proto.get_peers(address, target_id, timeout)
-        d.addBoth(self._result_serializer)
+        packed_args = (address, target_id, timeout)
+        return self._inflate_call_deflate(
+                self.node_proto.get_peers, packed_args)
+
+    def xmlrpc_announce_peer(self, address, target_id, token, port, timeout):
+        """@see dhtbot.protocols.krpc_responder.KRPC_Responder.announce_peer"""
+        packed_args = (address, target_id, token, port, timeout)
+        return self._inflate_call_deflate(
+                self.node_proto.announce_peer, packed_args)
+
+    def _inflate_call_deflate(self, func, args):
+        """Inflate the arguments, call the function, deflate its result"""
+        inflated_args = (self._inflate(arg) for arg in args)
+        d = func(*inflated_args)
+        d.addBoth(self._deflate)
         return d
 
-    def xmlrpc_announce_peer(self, address,
-            packed_target_id, token, port, timeout):
-        """@see dhtbot.protocols.krpc_responder.KRPC_Responder.announce_peer"""
-        address = tuple(address)
-        target_id = long(packed_target_id)
-        d = self.node_proto.announce_peer(address,
-            target_id, token, port, timeout)
-        d.addBoth(self._result_serializer)
-        return d
+    def _deflate(self, data):
+        return pickle.dumps(data)
+
+    def _inflate(self, data):
+        return pickle.loads(data)
 
 class KRPC_Iterator_Server(KRPC_Responder_Server):
     """
     Proxy between the XML RPC Server and the running KRPC_Iterator
 
     The following methods are available:
-        (all of the methods of KRPC_Responder and KRPC_Sender)
+        (all of the methods of KRPC_Responder)
         find_iterate
         get_iterate
 
-    These methods send back a deferred that returns
-    a pickle version of the result
+    These methods send back a pickled result
+
+    @see dhtbot.protocols.krpc_iterator.KRPC_Iterator
 
     """
-    def xmlrpc_find_iterate(self, packed_target_id, pickled_nodes, timeout):
+    def xmlrpc_find_iterate(self, target_id, nodes, timeout):
         return self._iterate_funcs(self.node_proto.find_iterate,
-                packed_target_id, pickled_nodes, timeout)
+                target_id, nodes, timeout)
 
-    def xmlrpc_get_iterate(self, packed_target_id, pickled_nodes, timeout):
+    def xmlrpc_get_iterate(self, target_id, nodes, timeout):
         return self._iterate_funcs(self.node_proto.get_iterate,
-                packed_target_id, pickled_nodes, timeout)
+                target_id, nodes, timeout)
 
-    def _iterate_funcs(self, func, packed_target_id, pickled_nodes, timeout):
-        target_id = long(packed_target_id)
-        # if pickled_nodes is None, None will be returned
-        # else the nodes will be unpickled
-        nodes = pickled_nodes and pickle.loads(pickled_nodes)
-        d = func(target_id, nodes, timeout)
-        d.addBoth(self._result_serializer)
-        return d
+    def _iterate_funcs(self, func, target_id, nodes, timeout):
+        packed_args = (target_id, nodes, timeout)
+        return self._inflate_call_deflate(func, packed_args)
