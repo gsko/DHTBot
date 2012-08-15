@@ -25,6 +25,13 @@ class KRPC_Responder_Server(xmlrpc.XMLRPC):
     @see dhtbot.xml_rpc.common
 
     """
+    # Let xmlrpc process None as an argument
+    allowNone = True
+
+    # Adding this attribute prevents exceptions
+    # in the xmlrpc code. TODO find out why
+    useDateTime = True
+
     def __init__(self, node_proto):
         self.node_proto = node_proto
 
