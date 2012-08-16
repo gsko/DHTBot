@@ -252,7 +252,7 @@ class Quarantiner(proxyForInterface(IKRPC_Responder)):
     """
     # TODO
     # quarantiner has not been tested
-    # NOTICE: there is an idea in DHTBot/IDEAS that
+    # NOTICE: there is an idea in DHTBot/TODO that
     # pertains to an enhancement over the original
     # quarantiner implementation
     def __init__(self, original):
