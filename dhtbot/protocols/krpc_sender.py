@@ -61,8 +61,8 @@ class IKRPC_Sender(Interface):
         If the krpc is a response or error, an attempt is made to
         find the original query. If it is found, the krpc is passed
         onto either responseReceived or errorReceived (along with
-        the transaction). If the original query is not found, the
-        orphan krpc is logged
+        the transaction). If the original query is not found (for
+        example because of a timeout), the orphan krpc is logged
 
         @param krpc: the krpc message that has been received
         @param address: the origin of this krpc
@@ -304,19 +304,20 @@ class KRPC_Sender(protocol.DatagramProtocol):
         # Only enter this code block if the error
         # is either a TimeoutError or a KRPCError
         f = failure.trap(TimeoutError, KRPCError)
+
         errornodes = self.routing_table.get_node_by_address(address)
-        if errornodes is not None and len(errornodes) > 1:
-            # TODO currently popping any node,
-            # should we specify a behavior when dealing with sybil nodes?
-            errornode = errornodes.pop()
-            errornodes.add(errornode)
+        if errornodes is None:
+            return failure
+
+        for errornode in errornodes:
             if f == TimeoutError:
-                # TODO introduce a better determination
-                # for whether to remove a node (besides .fresh())
+                # TODO multi-factor eviction (freshness is good,
+                # but what about (ie) number of failed queries?)
                 if not errornode.fresh():
                     self.routing_table.remove_node(errornode)
             elif f == KRPCError:
                 errornode.failed_query(transaction.time)
+
         return failure
 
     def _remove_transaction_bothback(self, result, transaction):
