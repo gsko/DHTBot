@@ -28,14 +28,25 @@ class RateLimiter(object):
                                     constants.host_bandwidth_rate))
 
     def consume(self, packet, address):
+        """
+        Tells whether the given packet can be processed/sent
+
+        @Returns boolean indicating whether the packet was "consumed"
+        by the rate limiter. The packet will not be consumed if there
+        was not enough bandwidth in the rate limiter
+
+        """
+        consumed = False
         packet_len = len(packet)
-        enough_global_bw = self.global_bucket.can_consume(packet_len)
         host_bucket = self.host_buckets[address]
+
+        enough_global_bw = self.global_bucket.can_consume(packet_len)
         enough_host_bw = host_bucket.can_consume(packet_len)
         if enough_global_bw and enough_host_bw:
             self.global_bucket.consume(len(packet))
             host_bucket.consume(len(packet))
-        return enough_global_bw and enough_host_bw
+            consumed = True
+        return consumed
 
 class TokenBucket(object):
     """An implementation of the token bucket algorithm.
