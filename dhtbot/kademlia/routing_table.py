@@ -37,7 +37,7 @@ class IRoutingTable(Interface):
     def remove_node(self, node):
         """Remove the given node from the tree
 
-        @return boolean indicating whether the node was found in the tree
+        @return boolean indicating whether the node was found
 
         """
 
@@ -45,7 +45,7 @@ class IRoutingTable(Interface):
         """
         Returns the node with the given node_id (if found)
 
-        @return a node or None
+        @return a contact.Node or None
 
         """
 
@@ -89,7 +89,6 @@ class TreeRoutingTable(object):
         self.active_kbuckets = [k]
 
     def offer_node(self, node):
-        """@see RoutingTable.offer_node"""
         # If node isn't in the routing table,
         # try adding it
         if node.node_id in self.nodes_dict:
@@ -105,13 +104,6 @@ class TreeRoutingTable(object):
             return node_accepted
 
     def remove_node(self, node):
-        """
-        Remove the given node from the routing table
-        
-        @return boolean indicating whether the node was
-        found in the routing table during removal
-        
-        """
         if node.node_id in self.nodes_dict:
             del self.nodes_dict[node.node_id]
             self.nodes_by_addr[node.address].remove(node)
@@ -123,19 +115,16 @@ class TreeRoutingTable(object):
             return False
 
     def get_node(self, node_id):
-        """Returns the node corresponding to the given node_id"""
         if node_id in self.nodes_dict:
             return self.nodes_dict[node_id]
 
     def get_node_by_address(self, address):
-        """@see RoutingTable.get_node_by_address"""
         if address in self.nodes_by_addr:
             nodes_set = self.nodes_by_addr[address]
             if len(nodes_set) > 0:
                 return nodes_set
 
     def get_closest_nodes(self, node_id, num_nodes=constants.k):
-        """@see RoutingTable.get_closest_nodes"""
         closest_nodes = []
         self._get_closest_nodes(node_id, self.root, closest_nodes, num_nodes)
 
