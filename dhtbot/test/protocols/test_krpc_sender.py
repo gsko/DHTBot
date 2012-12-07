@@ -79,55 +79,46 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
     def setUp(self):
         _swap_out_reactor()
 
+        q = Query()
+        q._transaction_id = 50
+        q._from = 58
+        q.rpctype = "ping"
+        self.query = q
+
     def tearDown(self):
         _restore_reactor()
 
     def test_krpcReceived(self):
-        query = Query()
-        query._transaction_id = 50
-        query._from = 58
-        query.rpctype = "ping"
-        self._patch_counter_and_input_krpc(query, "krpcReceived")
+        self._patch_counter_and_input_krpc(self.query, "krpcReceived")
 
     def test_queryReceived(self):
-        query = Query()
-        query._transaction_id = 50
-        query._from = 58
-        query.rpctype = "ping"
-        self._patch_counter_and_input_krpc(query, "queryReceived")
+        self._patch_counter_and_input_krpc(self.query, "queryReceived")
 
     def test_ping_Received(self):
-        query = Query()
-        query._transaction_id = 50
-        query._from = 58
-        query.rpctype = "ping"
-        self._patch_counter_and_input_krpc(query, query.rpctype + "_Received")
+        self._patch_counter_and_input_krpc(
+                self.query, self.query.rpctype + "_Received")
 
     def test_find_node_Received(self):
-        query = Query()
-        query._transaction_id = 50
-        query._from = 58
-        query.rpctype = "find_node"
-        query.target_id = 1500
-        self._patch_counter_and_input_krpc(query, query.rpctype + "_Received")
+        self.query.rpctype = "find_node"
+        self.query.target_id = 1500
+
+        self._patch_counter_and_input_krpc(
+                self.query, self.query.rpctype + "_Received")
 
     def test_get_peers_Received(self):
-        query = Query()
-        query._transaction_id = 50
-        query._from = 58
-        query.rpctype = "get_peers"
-        query.target_id = 1500
-        self._patch_counter_and_input_krpc(query, query.rpctype + "_Received")
+        self.query.rpctype = "get_peers"
+        self.query.target_id = 1500
+        self._patch_counter_and_input_krpc(
+                self.query, self.query.rpctype + "_Received")
 
     def test_announce_peer_Received(self):
-        query = Query()
-        query._transaction_id = 50
-        query._from = 58
-        query.rpctype = "announce_peer"
-        query.target_id = 1500
-        query.port = 5125
-        query.token = 15
-        self._patch_counter_and_input_krpc(query, query.rpctype + "_Received")
+        q = self.query
+        q.rpctype = "announce_peer"
+        q.target_id = 1500
+        q.port = 5125
+        q.token = 15
+        self._patch_counter_and_input_krpc(
+                self.query, self.query.rpctype + "_Received")
 
     def test_responseReceived(self):
         # Make a query that we will "send"
@@ -370,18 +361,14 @@ class KRPCRateLimiterTestCase(unittest.TestCase):
         address2 = ("127.0.0.1", 76)
         address3 = ("127.0.0.1", 86)
         address4 = ("127.0.0.1", 555)
-        # Packet 1
-        rate_limited_proto.sendKRPC(self.query, address1)
-        self.assertTrue(
-                rate_limited_proto._original.transport._packet_was_sent())
-        # Packet 2
-        rate_limited_proto.sendKRPC(self.query, address2)
-        self.assertTrue(
-                rate_limited_proto._original.transport._packet_was_sent())
-        # Packet 3
-        rate_limited_proto.sendKRPC(self.query, address3)
-        self.assertTrue(
-                rate_limited_proto._original.transport._packet_was_sent())
+
+        # Packet 1, 2, 3
+        for i in range(1, 4):
+            rate_limited_proto.sendKRPC(
+                    self.query, locals()['address' + str(i)])
+            self.assertTrue(
+                    rate_limited_proto._original.transport._packet_was_sent())
+
         # The fourth packet should not go through
         rate_limited_proto.sendKRPC(self.query, address4)
         self.assertFalse(

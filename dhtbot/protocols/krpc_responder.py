@@ -158,6 +158,7 @@ class KRPC_Responder(KRPC_Sender):
         # Verify the node_id is valid
         basic_coder.encode_network_id(node_id)
         KRPC_Sender.__init__(self, routing_table_class, node_id)
+
         # Datastore is used for storing peers on torrents
         self._datastore = MemoryDataStore(self._reactor)
         self._token_generator = _TokenGenerator()
