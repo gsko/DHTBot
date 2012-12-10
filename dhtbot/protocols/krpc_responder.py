@@ -243,42 +243,6 @@ class KRPC_Responder(KRPC_Sender):
         query.port = port
         return self.sendQuery(query, address, timeout)
 
-class Quarantiner(proxyForInterface(IKRPC_Responder)):
-    """
-    Patches quarantine functionality into the given protocol
-
-    @see DHTBot/references/subsecond.pdf : This paper
-        covers the quarantine idea
-    
-    """
-    # TODO
-    # quarantiner has not been tested
-    # NOTICE: there is an idea in DHTBot/TODO that
-    # pertains to an enhancement over the original
-    # quarantiner implementation
-    def __init__(self, original):
-        self.original = original
-        self._quarantine = Quarantine(self.ping, self.routing_table)
-
-    def queryReceived(self, query, address):
-        # Find or create node corresponding to this query
-        rt_node = self.routing_table.get_node(query._from)
-        querying_node = (rt_node if rt_node is not None
-                         else contact.Node(query._from, address))
-        # Test the querying_node to see if it responds
-        # to a ping query, if it does, add it to the routing table
-        # @see dhtbot.quarantine.Quarantine.jail
-        self._quarantine.jail(querying_node)
-        # Relay the query onto the original implementation
-        # so that it can dispatch it to the proper "RPCTYPE_Received" method
-        return self.original.queryReceived(query, address)
-
-class NICEr(proxyForInterface(IKRPC_Responder)):
-    # TODO
-    # Implement the NICE protocol
-    # (ping a stale node every 6 seconds)
-    pass
-
 class _TokenGenerator(object):
     """
     Generate unique tokens in response to get_peers requests

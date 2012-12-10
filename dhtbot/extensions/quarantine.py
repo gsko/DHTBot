@@ -1,17 +1,20 @@
 """
 @author Greg Skoczek
 
-Implementation of a Quarantine as suggested by
-section 5B of the subsecond paper
+Implementation of a Quarantine (along with a patcher
+that patches this functionality into a KRPC_Responder)
+as suggested by section 5B of the subsecond paper
 
 @see references/subsecond.pdf
 
 """
 from twisted.python import log
+from twisted.python.components import proxyForInterface
 
 from dhtbot.protocols.errors import TimeoutError, KRPCError
+from dhtbot.protocols.krpc_responder import IKRPC_Responder
 
-class Quarantine(object):
+class Quarantine_Protocol(object):
     """
     Simulate a quarantine
 
@@ -71,3 +74,37 @@ class Quarantine(object):
     def _remove_prisoner(self, failure, prisoner):
         failure.trap(TimeoutError, KRPCError)
         self.execute(prisoner)
+
+
+class Quarantine_Patcher(proxyForInterface(IKRPC_Responder)):
+    """
+    Patches quarantine functionality into a KRPC_Responder instance
+
+    @see DHTBot/references/subsecond.pdf : This paper
+        covers the quarantine idea
+    
+    """
+    # TODO
+    # quarantiner has not been tested
+    # NOTICE: there is an idea in DHTBot/ODO that
+    # pertains to an enhancement over the original
+    # quarantiner implementation
+
+    def __init__(self, original):
+        # TODO verify that 'original' satisfies
+        # the IKRPC_Responder interface
+        self.original = original
+        self._quarantine = Quarantine(self.ping, self.routing_table)
+
+    def queryReceived(self, query, address):
+        # Find or create node corresponding to this query
+        rt_node = self.routing_table.get_node(query._from)
+        querying_node = (rt_node if rt_node is not None
+                         else contact.Node(query._from, address))
+        # Test the querying_node to see if it responds
+        # to a ping query, if it does, add it to the routing table
+        # @see dhtbot.quarantine.Quarantine.jail
+        self._quarantine.jail(querying_node)
+        # Relay the query onto the original implementation
+        # so that it can dispatch it to the proper "RPCTYPE_Received" method
+        return self.original.queryReceived(query, address)

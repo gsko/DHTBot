@@ -1,11 +1,16 @@
 """
-Simple rate limiting algorithms and auxilary data structures
+Simple rate limiting algorithms and auxilary data structures along with
+a patcher for IKRPC_Sender implementations
+
 """
 import time
 
 from collections import defaultdict
+from twisted.python.components import proxyForInterface
 
 from dhtbot import constants
+from dhtbot.protocols.krpc_sender import IKRPC_Sender
+from dhtbot.coding import krpc_coder
 
 class RateLimiter(object):
     """
@@ -108,3 +113,44 @@ class TokenBucket(object):
             self._tokens = min(self.capacity, self._tokens + delta)
             self.timestamp = now
         return self._tokens
+
+
+class RateLimiter_Patcher(proxyForInterface(IKRPC_Sender, '_original')):
+    """
+    Limits the rate at which queries can enter/exit a KRPC_Sender instance
+
+    The object passed in to the constructor should implement
+    IKRPC_Sender. The passed in object will be overridden in
+    such a way that only a particular amount of bytes will
+    be allowed to be received/sent at a time (on a global
+    and per host limit)
+
+    @see dhtbot.rate_limiter.RateLimiter
+    @see dhtbot.constants.host_bandwidth_rate
+    @see dhtbot.constants.global_bandwidth_rate
+
+    """
+    # TODO this method should not be needed, but
+    # removing it causes weird errors
+    def __init__(self, original):
+        self._original = original
+
+    def startProtocol(self):
+        self._original.startProtocol()
+        self._incoming_rate_limiter = RateLimiter()
+        self._outgoing_rate_limiter = RateLimiter()
+
+    def sendKRPC(self, krpc, address):
+        encoded_krpc = krpc_coder.encode(krpc)
+        enough_bandwidth_to_send = \
+                self._outgoing_rate_limiter.consume(encoded_krpc, address)
+        if enough_bandwidth_to_send:
+            self._original.sendKRPC(krpc, address)
+
+    def datagramReceived(self, datagram, address):
+        # Only pass datagrams down the processing chain
+        # if the rate limiter agrees
+        enough_bandwidth_to_accept = \
+                self._incoming_rate_limiter.consume(datagram, address)
+        if enough_bandwidth_to_accept:
+            self._original.datagramReceived(datagram, address)
