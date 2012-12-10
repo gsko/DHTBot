@@ -14,7 +14,7 @@ from twisted.python.components import proxyForInterface
 from dhtbot.protocols.errors import TimeoutError, KRPCError
 from dhtbot.protocols.krpc_responder import IKRPC_Responder
 
-class Quarantine_Protocol(object):
+class Quarantine(object):
     """
     Simulate a quarantine
 
