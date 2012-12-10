@@ -19,6 +19,7 @@ class RateLimiterTestCase(unittest.TestCase):
         self.monkey_patcher = MonkeyPatcher()
         self.monkey_patcher.addPatch(rate_limiter.time, "time", self.clock)
         self.monkey_patcher.patch()
+
         self.address = ("127.0.0.1", 55)
         self.query = Query()
         self.query.rpctype = "ping"
