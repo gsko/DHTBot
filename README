@@ -3,8 +3,10 @@ DHTBot
 DHTBot is an MDHT client written entirely using the Twisted
 networking libraries.
 
+DHTBot is under heavy maintenance, but feel free to poke around.
 
-DHTBot is under heavy maintenance and is not usable at this time
+Run tests with:
+trial dhtbot.test
 
 
 Bug reports, patches, and comments welcome
