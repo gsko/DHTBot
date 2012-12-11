@@ -22,7 +22,6 @@ from dhtbot.coding.krpc_coder import InvalidKRPCError
 from dhtbot.krpc_types import Query, Response, Error
 from dhtbot.transaction import Transaction
 from dhtbot.protocols.errors import TimeoutError, KRPCError 
-from dhtbot.rate_limiter import RateLimiter
 
 class IKRPC_Sender(Interface):
     """

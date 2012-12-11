@@ -14,6 +14,15 @@ from twisted.python.components import proxyForInterface
 from dhtbot.protocols.errors import TimeoutError, KRPCError
 from dhtbot.protocols.krpc_responder import IKRPC_Responder
 
+# TODO
+## <integrate into="callback chain of query response">
+#   # If there are any nodes in response, lets try to
+#   # add them to the routing table
+#   if response.nodes is not None:
+#       for prisoner in response.nodes:
+#           self.quarantine.jail(prisoner)
+## </integrate>
+
 class Quarantine(object):
     """
     Simulate a quarantine

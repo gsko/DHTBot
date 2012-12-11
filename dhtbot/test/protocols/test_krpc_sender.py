@@ -8,7 +8,6 @@ from dhtbot.protocols.krpc_sender import KRPC_Sender
 from dhtbot.protocols.errors import TimeoutError
 from dhtbot.coding import krpc_coder
 from dhtbot.test.utils import Clock, HollowReactor
-from dhtbot import rate_limiter
 
 class HollowTransport(object):
     def __init__(self):

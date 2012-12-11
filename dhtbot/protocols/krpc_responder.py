@@ -15,19 +15,9 @@ from twisted.python.components import proxyForInterface
 from dhtbot import constants, contact
 from dhtbot.coding import basic_coder
 from dhtbot.krpc_types import Query
-from dhtbot.quarantine import Quarantine
 from dhtbot.datastore import MemoryDataStore
 from dhtbot.protocols.krpc_sender import KRPC_Sender, IKRPC_Sender
 from dhtbot.kademlia.routing_table import TreeRoutingTable
-
-# TODO
-## <integrate into="callback chain of query response">
-#   # If there are any nodes in response, lets try to
-#   # add them to the routing table
-#   if response.nodes is not None:
-#       for prisoner in response.nodes:
-#           self.quarantine.jail(prisoner)
-## </integrate>
 
 class IKRPC_Responder(IKRPC_Sender):
     """
