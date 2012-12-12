@@ -10,7 +10,7 @@ from dhtbot.protocols import krpc_sender
 from dhtbot.krpc_types import Response
 from dhtbot.protocols.errors import TimeoutError
 
-from dhtbot.test.utils import Counter, HollowUDPTransport, HollowReactor
+from dhtbot.test.utils import Counter, HollowTransport, HollowReactor
 
 make_node = lambda num: Node(num, ("127.0.0.1", num))
 make_peer = lambda num: ("127.0.0.1", num)
@@ -61,7 +61,7 @@ class KRPC_Iterator_TestCase(unittest.TestCase):
         self.monkey_patcher.addPatch(krpc_sender, "reactor", HollowReactor())
         self.monkey_patcher.patch()
         self.k_iter = KRPC_Iterator()
-        self.k_iter.transport = HollowUDPTransport()
+        self.k_iter.transport = HollowTransport()
         self.target_id = 5
 
     def tearDown(self):

@@ -330,8 +330,10 @@ class KRPC_Sender(protocol.DatagramProtocol):
         transaction_id = transaction.query._transaction_id
         if transaction_id in self._transactions:
                 del self._transactions[transaction_id]
-                if transaction.timeout_call.active():
-                    transaction.timeout_call.cancel()
+
+        if transaction.timeout_call.active():
+            transaction.timeout_call.cancel()
+
         return result
 
     def _generate_transaction_id(self):

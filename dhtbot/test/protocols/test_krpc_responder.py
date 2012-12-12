@@ -6,8 +6,7 @@ from dhtbot.coding import krpc_coder
 from dhtbot.krpc_types import Query, Response
 from dhtbot.protocols import krpc_responder, krpc_sender
 from dhtbot.protocols.krpc_responder import KRPC_Responder, _TokenGenerator
-from dhtbot.test.protocols.test_krpc_sender import (HollowTransport,
-        HollowReactor)
+from dhtbot.test.utils import HollowReactor, HollowTransport
 
 monkey_patcher = MonkeyPatcher()
 
@@ -110,15 +109,20 @@ class KRPC_ResponderTestCase(unittest.TestCase):
     def test_find_node_Received_sendsValidResponseWithTargetNode(self):
         # Create the protocol and populate its
         # routing table with nodes
-        # We need a node_id of 75 so that our kbuckets split
-        # in a way that we will have the target node of 77
-        kresponder = self._patched_responder(75)
+        # We need a node_id close to 'target_id' so that our kbuckets split
+        # in a way that we will have the target id
+        target_id = 76
+        our_id = target_id - 1
+
+        kresponder = self._patched_responder(our_id)
         node_list = []
         node_gen = lambda num: contact.Node(num, ("127.0.0.%d" % num, num))
         for i in range(100):
-            n = node_gen(i)
-            if kresponder.routing_table.offer_node(n):
-                node_list.append(n)
+            if i != our_id:
+                n = node_gen(i)
+                node_was_accepted = kresponder.routing_table.offer_node(n)
+                if node_was_accepted:
+                    node_list.append(n)
 
         querying_node = contact.Node(123, test_address)
         incoming_query = Query()
@@ -126,15 +130,17 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         incoming_query._from = querying_node.node_id
         incoming_query._transaction_id = 15
         # We have this target id in our routing table
-        incoming_query.target_id = 77
+        incoming_query.target_id = target_id
 
         expected_response = Response()
         expected_response._from = kresponder.node_id
         expected_response._transaction_id = 15
-        node_list.sort(key = lambda node:
-                        node.distance(incoming_query.target_id))
-        node_list = node_list[:1]
+
+        # The response node_list should contain only the target node
+        node_list = filter(lambda node: node.node_id == target_id, node_list)
         expected_response.nodes = node_list
+        if len(node_list) != 1:
+            self.fail("Too many or too few nodes!")
 
         kresponder.datagramReceived(krpc_coder.encode(incoming_query),
                                     test_address)
@@ -145,15 +151,19 @@ class KRPC_ResponderTestCase(unittest.TestCase):
     def test_get_peers_Received_sendsValidResponseWithNodes(self):
         # Create the protocol and populate its
         # routing table with nodes
-        # We need a node_id of 75 so that our kbuckets split
-        # in a way that we will have the target node of 77
-        kresponder = self._patched_responder(75)
+        # We need a node_id close to 'target_id' so that our kbuckets split
+        # in a way that we will have the target id
+        target_id = 76
+        our_id = target_id - 1
+
+        kresponder = self._patched_responder(our_id)
         node_list = []
         node_gen = lambda num: contact.Node(num, ("127.0.0.%d" % num, num))
         for i in range(100):
-            n = node_gen(i)
-            if kresponder.routing_table.offer_node(n):
-                node_list.append(n)
+            if i != our_id:
+                n = node_gen(i)
+                if kresponder.routing_table.offer_node(n):
+                    node_list.append(n)
 
         # simulate that a get_peers query has been
         # received by making a fake get_peers query
@@ -164,14 +174,14 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         incoming_query._from = querying_node.node_id
         incoming_query._transaction_id = 15
         # We have this target id in our routing table
-        incoming_query.target_id = 77
+        incoming_query.target_id = target_id
 
         # Create a response object and ensure
         # and the response (that the node sends)
         # matches what we made
         expected_response = Response()
         expected_response._from = kresponder.node_id
-        expected_response._transaction_id = 15
+        expected_response._transaction_id = incoming_query._transaction_id
         # the specification calls for the resulting
         # nodes to be sorted by distance
         node_list.sort(key = lambda node:
@@ -347,14 +357,6 @@ class KRPC_ResponderTestCase(unittest.TestCase):
         response = kresponder.sendResponse.response
         # Make sure no peers were returned
         self.assertEquals(None, response.peers)
-
-class QuarantinerTestCase(unittest.TestCase):
-    # TODO
-    pass
-
-class NICER_TestCase(unittest.TestCase):
-    # TODO
-    pass
 
 class _TokenGeneratorTestCase(unittest.TestCase):
     def setUp(self):

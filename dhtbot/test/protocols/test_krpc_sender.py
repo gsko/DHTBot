@@ -7,38 +7,7 @@ from dhtbot.protocols import krpc_sender
 from dhtbot.protocols.krpc_sender import KRPC_Sender
 from dhtbot.protocols.errors import TimeoutError
 from dhtbot.coding import krpc_coder
-from dhtbot.test.utils import Clock, HollowReactor
-
-class HollowTransport(object):
-    def __init__(self):
-        self.data = None
-        self.address = None
-
-    def write(self, data, address):
-        """
-        Remember what data and address was passed into write and do nothing
-        """
-        self.data = data
-        self.address = address
-
-    def _reset(self):
-        """
-        Resets the HollowTransport so that it appears as if no packet was sent
-        """
-        self.data = None
-        self.address = None
-
-    def _packet_was_sent(self):
-        """
-        Check whether a packet has been sent
-
-        In either case, reset the HollowTransport to appear as if
-        no packets have been sent
-
-        """
-        sent = self.data != None and self.address != None
-        self._reset()
-        return sent
+from dhtbot.test.utils import Clock, HollowReactor, HollowTransport
 
 class Counter(object):
     def __init__(self):

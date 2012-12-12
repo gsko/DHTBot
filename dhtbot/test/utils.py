@@ -58,18 +58,37 @@ class Counter(object):
     def reset(self):
         self.count = 0
 
-
-class HollowUDPTransport(object):
-    """
-    Mimic the write functionality of a UDP Transport
-    """
+class HollowTransport(object):
     def __init__(self):
         self.packet = None
         self.address = None
 
     def write(self, packet, address):
+        """
+        Remember what packet and address was passed into write and do nothing
+        """
         self.packet = packet
         self.address = address
+
+    def _reset(self):
+        """
+        Resets the HollowTransport so that it appears as if no packet was sent
+        """
+        self.packet = None
+        self.address = None
+
+    def _packet_was_sent(self):
+        """
+        Check whether a packet has been sent
+
+        In either case, reset the HollowTransport to appear as if
+        no packets have been sent
+
+        """
+        sent = self.packet != None and self.address != None
+        self._reset()
+        return sent
+
 
 
 class HollowDelayedCall(object):
