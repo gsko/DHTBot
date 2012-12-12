@@ -8,11 +8,7 @@ from dhtbot.coding import krpc_coder
 from dhtbot.kademlia.routing_table import TreeRoutingTable
 from dhtbot.krpc_types import Query
 from dhtbot.protocols.krpc_sender import KRPC_Sender
-from dhtbot.test.utils import Clock
-
-# TODO refactor this HollowTransport with the one with dhtbot.test.utils
-from dhtbot.test.protocols.test_krpc_sender import \
-        HollowTransport, Clock, Counter
+from dhtbot.test.utils import Clock, Counter, HollowTransport
 
 class TestingBase(object):
     def setUp(self):
@@ -160,23 +156,22 @@ class RateLimiterPatcherTestCase(unittest.TestCase):
         """
         rate_limited_proto = self._patched_sender()
         counter = Counter()
-        counter.num = 0
-        rate_limited_proto.krpcReceived = counter.count
+        rate_limited_proto.krpcReceived = counter
         # One packet should be accepted without problems
         rate_limited_proto.datagramReceived(
                 krpc_coder.encode(self.query), self.address)
-        self.assertEquals(1, counter.num)
-        counter.num = 0
+        self.assertEquals(1, counter.count)
+        counter.reset()
         # The second packet should be dropped
         rate_limited_proto.datagramReceived(
                 krpc_coder.encode(self.query), self.address)
-        self.assertEquals(0, counter.num)
+        self.assertEquals(0, counter.count)
         # Reset the rate limiter and the next packet should
         # be accepted
         self.clock.set(1)
         rate_limited_proto.datagramReceived(
                 krpc_coder.encode(self.query), self.address)
-        self.assertEquals(1, counter.num)
+        self.assertEquals(1, counter.count)
 
     def test_inbound_overflowGlobalAndReset(self):
         """
@@ -191,29 +186,28 @@ class RateLimiterPatcherTestCase(unittest.TestCase):
         address4 = ("127.0.0.1", 555)
         rate_limited_proto = self._patched_sender()
         counter = Counter()
-        counter.num = 0
-        rate_limited_proto.krpcReceived = counter.count
+        rate_limited_proto.krpcReceived = counter
         # The first three packets should be accepted without
         # any problems
         rate_limited_proto.datagramReceived(
                 krpc_coder.encode(self.query), address1)
-        self.assertEquals(1, counter.num)
+        self.assertEquals(1, counter.count)
         rate_limited_proto.datagramReceived(
                 krpc_coder.encode(self.query), address2)
-        self.assertEquals(2, counter.num)
+        self.assertEquals(2, counter.count)
         rate_limited_proto.datagramReceived(
                 krpc_coder.encode(self.query), address3)
-        self.assertEquals(3, counter.num)
+        self.assertEquals(3, counter.count)
         # The fourth packet should be dropped
         rate_limited_proto.datagramReceived(
                 krpc_coder.encode(self.query), address4)
-        self.assertEquals(3, counter.num)
+        self.assertEquals(3, counter.count)
         # Reset the rate limiter and the next packet should be
         # accepted
         self.clock.set(1)
         rate_limited_proto.datagramReceived(
                 krpc_coder.encode(self.query), self.address)
-        self.assertEquals(4, counter.num)
+        self.assertEquals(4, counter.count)
 
     def test_outbound_overflowHostAndReset(self):
         """

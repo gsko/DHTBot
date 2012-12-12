@@ -43,7 +43,7 @@ class Counter(object):
     >>> time.time.count
     0
 
-    The original method will be called if it is supplied in the constructor
+    The original method will also be called if it is supplied in the constructor
 
     """
     def __init__(self, orig_func=None):
@@ -92,14 +92,15 @@ class HollowTransport(object):
 
 
 class HollowDelayedCall(object):
+    def __init__(self):
+        self._active = True
+
     def active(self):
-        return False
+        return self._active
 
     def cancel(self):
-        pass
+        self._active = False
 
 class HollowReactor(object):
     def callLater(self, timeout, function, *args, **kwargs):
         return HollowDelayedCall()
-
-

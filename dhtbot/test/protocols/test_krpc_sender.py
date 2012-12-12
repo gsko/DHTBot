@@ -7,14 +7,7 @@ from dhtbot.protocols import krpc_sender
 from dhtbot.protocols.krpc_sender import KRPC_Sender
 from dhtbot.protocols.errors import TimeoutError
 from dhtbot.coding import krpc_coder
-from dhtbot.test.utils import Clock, HollowReactor, HollowTransport
-
-class Counter(object):
-    def __init__(self):
-        self.num = 0
-
-    def count(self, *args, **kwargs):
-        self.num += 1
+from dhtbot.test.utils import Clock, HollowReactor, HollowTransport, Counter
 
 # Write two functions that simply remove / restore
 # the reactor for krpc_sender
@@ -39,10 +32,11 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
         k_messenger = KRPC_Sender(TreeRoutingTable, 2**50)
         # Patch in our counter
         counter = Counter()
-        setattr(k_messenger, method_name, counter.count)
+        setattr(k_messenger, method_name, counter)
+
         # Pass in the krpc
         k_messenger.datagramReceived(krpc_coder.encode(krpc), address)
-        self.assertEquals(num_calls, counter.num)
+        self.assertEquals(num_calls, counter.count)
 
     def setUp(self):
         _swap_out_reactor()
@@ -96,7 +90,7 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
         counter = Counter()
         k_messenger = KRPC_Sender(TreeRoutingTable, 2**50)
         k_messenger.transport = HollowTransport()
-        k_messenger.responseReceived = counter.count
+        k_messenger.responseReceived = counter
         # Send the query and receive the response
         k_messenger.sendQuery(query, address, timeout)
         self.assertTrue(query._transaction_id in k_messenger._transactions)
@@ -105,7 +99,7 @@ class KRPC_Sender_ReceivedCallChainTestCase(unittest.TestCase):
         response._from = 9
         k_messenger.datagramReceived(krpc_coder.encode(response), address)
         _restore_reactor()
-        self.assertEquals(1, counter.num)
+        self.assertEquals(1, counter.count)
 
 class KRPC_Sender_DeferredTestCase(unittest.TestCase):
     def setUp(self):
@@ -134,10 +128,10 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
         response = self.query.build_response()
         response._from = 9
         d.addCallback(self._response_equality, response)
-        d.addCallback(counter.count)
+        d.addCallback(counter)
         encoded_response = krpc_coder.encode(response)
         self.k_messenger.datagramReceived(encoded_response, address)
-        self.assertEquals(1, counter.num)
+        self.assertEquals(1, counter.count)
         self.assertFalse(self.query._transaction_id in
                          self.k_messenger._transactions)
 
@@ -155,10 +149,10 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
         # Build the response we will "receive"
         error = self.query.build_error()
         d.addErrback(self._error_equality, error)
-        d.addErrback(counter.count)
+        d.addErrback(counter)
         encoded_error = krpc_coder.encode(error)
         self.k_messenger.datagramReceived(encoded_error, address)
-        self.assertEquals(1, counter.num)
+        self.assertEquals(1, counter.count)
         self.assertFalse(self.query._transaction_id in
                          self.k_messenger._transactions)
 
@@ -174,8 +168,8 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
                          self.k_messenger._transactions)
         counter = Counter()
         d.addErrback(self._neutralize_invalidKRPCError)
-        d.addErrback(counter.count)
-        self.assertEquals(0, counter.num)
+        d.addErrback(counter)
+        self.assertEquals(0, counter.count)
 
     def _neutralize_TimeoutError(self, failure):
         failure.trap(TimeoutError)
@@ -187,8 +181,8 @@ class KRPC_Sender_DeferredTestCase(unittest.TestCase):
                         self.k_messenger._transactions)
         d.errback(TimeoutError())
         d.addErrback(self._neutralize_TimeoutError)
-        d.addErrback(counter.count)
-        self.assertEquals(0, counter.num)
+        d.addErrback(counter)
+        self.assertEquals(0, counter.count)
         self.assertFalse(self.query._transaction_id in
                          self.k_messenger._transactions)
 
