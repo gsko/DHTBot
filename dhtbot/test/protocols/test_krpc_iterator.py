@@ -233,7 +233,7 @@ class KRPC_Iterator_TestCase(unittest.TestCase):
 
     def _ensure_iteration_error_callback(self, _ignored_result):
         self.fail("KRPC_Iterator did not throw an IterationError " +
-                "and was successful instead")
+                "and was incorrectly successful instead")
 
     def _check_k_iter_failsWhenAllQueriesTimeOut(self, iter_func):
         sendQuery = self.k_iter.sendQuery
@@ -241,12 +241,16 @@ class KRPC_Iterator_TestCase(unittest.TestCase):
         num_queries = 5
         d = iter_func(self.target_id, test_nodes[:num_queries])
         deferreds = self.k_iter.sendQuery.deferreds
-        for (query, deferred) in deferreds:
-            deferred.errback(TimeoutError())
-        # Make sure an IterationError was thrown
+
+        # Make sure an IterationError is thrown once we
+        # artificially timeout all queries
         d.addCallbacks(callback=self._ensure_iteration_error_callback,
                 errback=self._ensure_iteration_error_errback)
 
+        # Timeout all queries
+        for (query, deferred) in deferreds:
+            deferred.errback(TimeoutError())
+        
     def _compare_nodes(self, result_node_list, expected_nodes):
         # Assert that our resulting list of nodes
         # matches what we expected
