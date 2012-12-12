@@ -33,6 +33,20 @@ class _KRPC(object):
                 result += "%s=%s " % (attribute, str(attribute_value))
         return result.rstrip(" ")
 
+    def _get_attrs(self):
+        # Used in __eq__ and must be
+        # implemented by subclasses
+        raise NotImplementedError()
+
+    def __eq__(self, other):
+        attributes = self._get_attrs()
+        return all(hasattr(other, attribute) and
+                getattr(other, attribute) == getattr(self, attribute)
+                for attribute in attributes)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 class Query(_KRPC):
     """
     A Query message has a type, querier ID, and various other details
@@ -94,16 +108,7 @@ class Query(_KRPC):
         return ('_transaction_id', 'rpctype', 
                 '_from', 'target_id', 'token', 'port')
 
-    def __eq__(self, other):
-        attributes = self._get_attrs()
-        return all(hasattr(other, attribute) and
-                getattr(other, attribute) == getattr(self, attribute)
-                for attribute in attributes)
-        # TODO DRY (in Response)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-    
+   
 class Response(_KRPC):
     """
     A Response contains the requested data of the originating query
@@ -133,18 +138,6 @@ class Response(_KRPC):
         return ('_transaction_id', '_from',
                     'nodes', 'token', 'peers', 'rpctype')
 
-    def __eq__(self, other):
-        attributes = self._get_attrs()
-        return all(hasattr(other, attribute) and
-                getattr(other, attribute) == getattr(self, attribute)
-                for attribute in attributes)
-        # TODO refactor this attribute checking
-        # outside of both Response/Query into a common place (DRY)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
- 
-
 class Error(_KRPC):
     """
     An Error signifies that a query failed (for a variety of reasons)
@@ -165,3 +158,6 @@ class Error(_KRPC):
                 self._build_repr(printable_attributes),
                 message_string
                 )
+
+    def _get_attrs(self):
+        return ('_transaction_id', 'code', 'message')
