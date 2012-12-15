@@ -4,3 +4,4 @@ syntax: glob
 *.pyo
 *.swp
 *.cache
+.idea/*
