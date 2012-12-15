@@ -163,10 +163,6 @@ class KBucket(object):
         """
         Returns an iterable containing the nodes in this KBucket
         
-        Note: Feel free to modify the iterable without consequences.
-        However, if you modify nodes found within this KBucket,
-        you are modifying the original node found in the KBucket
-
         """
         return set(self._nodes)
 
