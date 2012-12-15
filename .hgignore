@@ -5,3 +5,5 @@ syntax: glob
 *.swp
 *.cache
 .idea/*
+.project
+.pydevproject
