@@ -5,6 +5,14 @@ networking libraries.
 
 DHTBot is under heavy maintenance, but feel free to poke around.
 
+
+*****
+NOTE:
+*****
+This repository is no longer being maintained. DHTBot has been
+moved and renamed to:
+    mdht: https://github.com/gsko/mdht
+
 Run tests with:
 trial dhtbot.test
 
